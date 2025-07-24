@@ -3,7 +3,7 @@
 /// To use, `import 'package:pluck_fleather/fleather.dart';`.
 library;
 
-export 'package:parchment/parchment.dart';
+export 'package:pluck_parchment/parchment.dart';
 
 export 'l10n/l10n.dart' hide BuildContextLocalizationsExtension;
 export 'src/rendering/editor.dart';

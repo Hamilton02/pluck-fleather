@@ -1,4 +1,4 @@
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 import 'package:test/test.dart';
 
 final rightAttrs = ParchmentStyle().merge(ParchmentAttribute.right);

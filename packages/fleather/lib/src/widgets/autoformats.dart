@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' as intl;
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 /// An [AutoFormat] is responsible for looking backwards for a pattern and
 /// applying a formatting suggestion to a document.

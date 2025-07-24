@@ -1,5 +1,5 @@
-import 'package:parchment/parchment.dart';
-import 'package:parchment/src/codecs/html.dart';
+import 'package:pluck_parchment/parchment.dart';
+import 'package:pluck_parchment/src/codecs/html.dart';
 import 'package:test/test.dart';
 
 void main() {

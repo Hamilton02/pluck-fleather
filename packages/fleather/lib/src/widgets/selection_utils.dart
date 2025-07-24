@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 /// Returns `true` if `node` intersects with `selection`.
 ///

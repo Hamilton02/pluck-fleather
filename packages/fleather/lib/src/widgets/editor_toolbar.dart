@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 import 'package:pluck_fleather/util.dart';
 
 import 'controller.dart';

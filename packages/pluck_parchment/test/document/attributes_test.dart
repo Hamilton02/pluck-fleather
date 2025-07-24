@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 void main() {
   group('$ParchmentStyle', () {

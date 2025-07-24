@@ -3,6 +3,7 @@ import 'package:pluck_fleather/fleather.dart';
 import 'package:pluck_fleather/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 void main() {
   group('$FleatherController', () {

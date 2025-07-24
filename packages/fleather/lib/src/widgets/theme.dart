@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 // ignore: unused_import
 import 'package:pluck_fleather/extensions/color_extensions.dart';
 

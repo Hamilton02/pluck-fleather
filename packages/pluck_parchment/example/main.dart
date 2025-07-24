@@ -1,4 +1,4 @@
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 void main() {
   final doc = ParchmentDocument();

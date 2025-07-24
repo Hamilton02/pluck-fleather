@@ -9,7 +9,7 @@ import 'package:flutter/material.dart' hide SystemContextMenu;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 import '../../util.dart';
 import '../rendering/editor.dart';

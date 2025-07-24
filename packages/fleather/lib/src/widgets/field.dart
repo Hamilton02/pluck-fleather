@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 import '../services/clipboard_manager.dart';
 import 'controller.dart';

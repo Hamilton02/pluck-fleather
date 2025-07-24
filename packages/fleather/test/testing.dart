@@ -4,6 +4,7 @@ import 'package:pluck_fleather/src/widgets/text_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 var delta = Delta()..insert('This House Is A Circus\n');
 

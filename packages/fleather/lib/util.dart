@@ -4,7 +4,7 @@ library;
 import 'dart:math' as math;
 import 'dart:ui';
 
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 export 'src/fast_diff.dart';
 

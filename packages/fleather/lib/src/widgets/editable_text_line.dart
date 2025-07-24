@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:parchment/parchment.dart';
+import 'package:pluck_parchment/parchment.dart';
 
 import '../rendering/editable_box.dart';
 import '../rendering/editable_text_line.dart';

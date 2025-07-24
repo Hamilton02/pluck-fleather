@@ -2,6 +2,7 @@ import 'package:pluck_fleather/fleather.dart';
 import 'package:pluck_fleather/src/widgets/editor_input_client_mixin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pluck_parchment/parchment.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../testing.dart';

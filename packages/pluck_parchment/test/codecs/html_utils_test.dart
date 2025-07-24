@@ -1,4 +1,4 @@
-import 'package:parchment/src/codecs/html_utils.dart';
+import 'package:pluck_parchment/src/codecs/html_utils.dart';
 import 'package:test/test.dart';
 
 void main() {
