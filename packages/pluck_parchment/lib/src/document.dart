@@ -1,6 +1,12 @@
 import 'dart:async';
+import 'package:parchment_delta/parchment_delta.dart' hide Delta;
+import 'package:parchment_delta/parchment_delta.dart' as parchment
+    show Delta, Operation;
 
-import 'package:parchment_delta/parchment_delta.dart';
+import 'package:markdown/markdown.dart' as md;
+import 'package:markdown_quill/markdown_quill.dart';
+import 'package:quill_delta/quill_delta.dart'
+    as quill; // This is dart_quill_delta
 
 import 'document/attributes.dart';
 import 'document/block.dart';
@@ -26,10 +32,10 @@ class ParchmentChange {
   ParchmentChange(this.before, this.change, this.source);
 
   /// Document state before [change].
-  final Delta before;
+  final parchment.Delta before;
 
   /// Change delta applied to the document.
-  final Delta change;
+  final parchment.Delta change;
 
   /// The source of this change.
   final ChangeSource source;
@@ -41,7 +47,7 @@ class ParchmentDocument {
   ParchmentDocument(
       {ParchmentHeuristics heuristics = ParchmentHeuristics.fallback})
       : _heuristics = heuristics,
-        _delta = Delta()..insert('\n') {
+        _delta = parchment.Delta()..insert('\n') {
     _loadDocument(_delta);
   }
 
@@ -49,15 +55,22 @@ class ParchmentDocument {
   ParchmentDocument.fromJson(List data,
       {ParchmentHeuristics heuristics = ParchmentHeuristics.fallback})
       : _heuristics = heuristics,
-        _delta = _migrateDelta(Delta.fromJson(data)) {
+        _delta = _migrateDelta(parchment.Delta.fromJson(data)) {
     _loadDocument(_delta);
   }
 
   /// Creates new ParchmentDocument from provided `delta`.
-  ParchmentDocument.fromDelta(Delta delta,
+  ParchmentDocument.fromDelta(parchment.Delta delta,
       {ParchmentHeuristics heuristics = ParchmentHeuristics.fallback})
       : _heuristics = heuristics,
         _delta = _migrateDelta(delta) {
+    _loadDocument(_delta);
+  }
+
+  ParchmentDocument.fromMarkdown(String markdown,
+      {ParchmentHeuristics heuristics = ParchmentHeuristics.fallback})
+      : _heuristics = heuristics,
+        _delta = ParchmentDocument.markdownToParchmentDelta(markdown) {
     _loadDocument(_delta);
   }
 
@@ -76,9 +89,9 @@ class ParchmentDocument {
   final StreamController<ParchmentChange> _controller =
       StreamController.broadcast();
 
-  /// Returns contents of this document as [Delta].
-  Delta toDelta() => Delta.from(_delta);
-  Delta _delta;
+  /// Returns contents of this document as [parchment.Delta].
+  parchment.Delta toDelta() => parchment.Delta.from(_delta);
+  parchment.Delta _delta;
 
   /// Returns plain text representation of this document.
   String toPlainText() => _root.children.map((e) => e.toPlainText()).join('');
@@ -106,11 +119,11 @@ class ParchmentDocument {
   /// Applies heuristic rules before modifying this document and
   /// produces a change event with its source set to [ChangeSource.local].
   ///
-  /// Returns an instance of [Delta] actually composed into this document.
-  Delta insert(int index, Object data) {
+  /// Returns an instance of [parchment.Delta] actually composed into this document.
+  parchment.Delta insert(int index, Object data) {
     assert(index >= 0);
     if (data is String) {
-      if (data.isEmpty) return Delta();
+      if (data.isEmpty) return parchment.Delta();
     } else {
       assert(data is EmbeddableObject);
       data = (data as EmbeddableObject).toJson();
@@ -126,8 +139,8 @@ class ParchmentDocument {
   /// This method applies heuristic rules before modifying this document and
   /// produces a [ParchmentChange] with source set to [ChangeSource.local].
   ///
-  /// Returns an instance of [Delta] actually composed into this document.
-  Delta delete(int index, int length) {
+  /// Returns an instance of [parchment.Delta] actually composed into this document.
+  parchment.Delta delete(int index, int length) {
     assert(index >= 0 && length > 0);
     final change = _heuristics.applyDeleteRules(this, index, length);
     if (change.isNotEmpty) {
@@ -142,8 +155,8 @@ class ParchmentDocument {
   /// This method applies heuristic rules before modifying this document and
   /// produces a change event with its source set to [ChangeSource.local].
   ///
-  /// Returns an instance of [Delta] actually composed into this document.
-  Delta replace(int index, int length, Object data) {
+  /// Returns an instance of [parchment.Delta] actually composed into this document.
+  parchment.Delta replace(int index, int length, Object data) {
     assert(data is String || data is EmbeddableObject);
 
     final dataIsNotEmpty = (data is String) ? data.isNotEmpty : true;
@@ -151,7 +164,7 @@ class ParchmentDocument {
     assert(index >= 0 && (dataIsNotEmpty || length > 0),
         'With index $index, length $length and text "$data"');
 
-    var delta = Delta();
+    var delta = parchment.Delta();
 
     // We have to insert before applying delete rules
     // Otherwise delete would be operating on stale document snapshot.
@@ -172,13 +185,13 @@ class ParchmentDocument {
   /// Applies heuristic rules before modifying this document and
   /// produces a change event with its source set to [ChangeSource.local].
   ///
-  /// Returns an instance of [Delta] actually composed into this document.
-  /// The returned [Delta] may be empty in which case this document remains
+  /// Returns an instance of [parchment.Delta] actually composed into this document.
+  /// The returned [parchment.Delta] may be empty in which case this document remains
   /// unchanged and no change event is published to the [changes] stream.
-  Delta format(int index, int length, ParchmentAttribute attribute) {
+  parchment.Delta format(int index, int length, ParchmentAttribute attribute) {
     assert(index >= 0 && length >= 0);
 
-    var change = Delta();
+    var change = parchment.Delta();
 
     final formatChange =
         _heuristics.applyFormatRules(this, index, length, attribute);
@@ -215,7 +228,7 @@ class ParchmentDocument {
     return block.lookup(result.offset, inclusive: true);
   }
 
-  /// Composes [change] Delta into this document.
+  /// Composes [change] parchment.Delta into this document.
   ///
   /// Use this method with caution as it does not apply heuristic rules to the
   /// [change].
@@ -225,7 +238,7 @@ class ParchmentDocument {
   /// of this document.
   ///
   /// In case the [change] is invalid, behavior of this method is unspecified.
-  void compose(Delta change, ChangeSource source) {
+  void compose(parchment.Delta change, ChangeSource source) {
     _checkMutable();
     change.trim();
     assert(change.isNotEmpty);
@@ -278,8 +291,8 @@ class ParchmentDocument {
   /// Migrates `delta` to the latest format supported by Parchment documents.
   ///
   /// Allows backward compatibility with 0.x versions of Parchment package.
-  static Delta _migrateDelta(Delta delta) {
-    final result = Delta();
+  static parchment.Delta _migrateDelta(parchment.Delta delta) {
+    final result = parchment.Delta();
     for (final op in delta.toList()) {
       if (op.hasAttribute(_kEmbedAttributeKey)) {
         // Convert legacy embed style attribute into the embed insert operation.
@@ -307,7 +320,7 @@ class ParchmentDocument {
   }
 
   /// Loads [document] delta into this document.
-  void _loadDocument(Delta doc) {
+  void _loadDocument(parchment.Delta doc) {
     assert((doc.last.data as String).endsWith('\n'),
         'Invalid document delta. Document delta must always end with a line-break.');
     var offset = 0;
@@ -319,7 +332,7 @@ class ParchmentDocument {
         _root.insert(offset, data, style);
       } else {
         throw ArgumentError.value(doc,
-            'Document Delta can only contain insert operations but ${op.key} found.');
+            'Document parchment.Delta can only contain insert operations but ${op.key} found.');
       }
       offset += op.length;
     }
@@ -332,5 +345,36 @@ class ParchmentDocument {
         _root.childCount > 1) {
       _root.remove(node);
     }
+  }
+
+  static parchment.Delta markdownToParchmentDelta(String markdown) {
+    // Step 1: Markdown → dart_quill_delta.parchment.Delta
+    final mdDoc = md.Document(extensionSet: md.ExtensionSet.gitHubFlavored);
+    final converter = MarkdownToDelta(markdownDocument: mdDoc);
+    final quill.Delta rawDelta = converter.convert(markdown) as quill.Delta;
+
+    // Step 2: Convert dart_quill_delta.Delta to parchment.Delta
+    final parchmentDelta = parchment.Delta();
+    for (final op in rawDelta.toList()) {
+      if (op.isInsert) {
+        parchmentDelta.push(parchment.Operation.insert(
+          op.value,
+          op.attributes == null
+              ? null
+              : Map<String, dynamic>.from(op.attributes!),
+        ));
+      } else if (op.isDelete) {
+        parchmentDelta.push(parchment.Operation.delete(op.length));
+      } else if (op.isRetain) {
+        parchmentDelta.push(parchment.Operation.retain(
+          op.length,
+          op.attributes == null
+              ? null
+              : Map<String, dynamic>.from(op.attributes!),
+        ));
+      }
+    }
+
+    return parchmentDelta;
   }
 }
