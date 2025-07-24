@@ -12,7 +12,7 @@ dependencies:
   collection: ^1.18.0
   parchment_delta: ^1.0.0
   html: ^0.15.6
-  meta: ^1.15.0
+  meta: ^1.12.0
 
 dev_dependencies:
   test: ^1.26.1
