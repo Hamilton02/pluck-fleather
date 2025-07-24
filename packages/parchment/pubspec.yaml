@@ -6,7 +6,7 @@ repository: https://github.com/fleather-editor/fleather
 issue_tracker: https://github.com/fleather-editor/fleather/issues
 
 environment:
-  sdk: ">=3.6.0 <4.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   collection: ^1.18.0
