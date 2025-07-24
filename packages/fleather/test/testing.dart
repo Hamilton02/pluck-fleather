@@ -1,6 +1,6 @@
-import 'package:fleather/fleather.dart';
-import 'package:fleather/src/widgets/editor_input_client_mixin.dart';
-import 'package:fleather/src/widgets/text_selection.dart';
+import 'package:pluck_fleather/fleather.dart';
+import 'package:pluck_fleather/src/widgets/editor_input_client_mixin.dart';
+import 'package:pluck_fleather/src/widgets/text_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

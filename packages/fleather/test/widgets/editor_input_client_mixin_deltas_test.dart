@@ -1,5 +1,5 @@
-import 'package:fleather/fleather.dart';
-import 'package:fleather/src/widgets/editor_input_client_mixin.dart';
+import 'package:pluck_fleather/fleather.dart';
+import 'package:pluck_fleather/src/widgets/editor_input_client_mixin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';

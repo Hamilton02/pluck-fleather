@@ -1,6 +1,6 @@
 /// Fleather widgets and document model.
 ///
-/// To use, `import 'package:fleather/fleather.dart';`.
+/// To use, `import 'package:pluck_fleather/fleather.dart';`.
 library;
 
 export 'package:parchment/parchment.dart';

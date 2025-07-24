@@ -2,10 +2,10 @@
 
 import 'dart:ui';
 
-import 'package:fleather/fleather.dart';
-import 'package:fleather/src/rendering/editable_text_line.dart';
-import 'package:fleather/src/rendering/paragraph_proxy.dart';
-import 'package:fleather/util.dart';
+import 'package:pluck_fleather/fleather.dart';
+import 'package:pluck_fleather/src/rendering/editable_text_line.dart';
+import 'package:pluck_fleather/src/rendering/paragraph_proxy.dart';
+import 'package:pluck_fleather/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
