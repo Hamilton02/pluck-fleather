@@ -28,6 +28,8 @@ import 'shortcuts.dart';
 import 'text_line.dart';
 import 'text_selection.dart';
 import 'theme.dart';
+// ignore: unused_import
+import 'package:pluck_fleather/extensions/color_extensions.dart';
 
 class _WebClipboardStatusNotifier extends ClipboardStatusNotifier {
   @override
@@ -394,8 +396,7 @@ class _FleatherEditorState extends State<FleatherEditor>
       return false;
     }
 
-    if (cause == SelectionChangedCause.longPress ||
-        cause == SelectionChangedCause.stylusHandwriting) {
+    if (cause == SelectionChangedCause.longPress) {
       return true;
     }
 

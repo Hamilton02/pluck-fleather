@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:parchment/parchment.dart';
+// ignore: unused_import
+import 'package:pluck_fleather/extensions/color_extensions.dart';
 
 /// Applies a Fleather editor theme to descendant widgets.
 ///

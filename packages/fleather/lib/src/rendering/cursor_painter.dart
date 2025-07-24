@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 
 import '../widgets/cursor.dart';
 import 'editable_box.dart';
+// ignore: unused_import
+import 'package:pluck_fleather/extensions/color_extensions.dart';
 
 const double _kCaretHeightOffset = 2.0; // pixels
 

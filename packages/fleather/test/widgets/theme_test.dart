@@ -1,6 +1,8 @@
 import 'package:pluck_fleather/fleather.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+// ignore: unused_import
+import 'package:pluck_fleather/extensions/color_extensions.dart';
 
 void main() {
   group('FleatherThemeData', () {

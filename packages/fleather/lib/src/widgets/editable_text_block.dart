@@ -12,6 +12,8 @@ import 'editor.dart';
 import 'link.dart';
 import 'text_line.dart';
 import 'theme.dart';
+// ignore: unused_import
+import 'package:pluck_fleather/extensions/color_extensions.dart';
 
 class EditableTextBlock extends StatelessWidget {
   final BlockNode node;
