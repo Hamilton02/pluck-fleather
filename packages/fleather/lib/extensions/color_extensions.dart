@@ -13,12 +13,26 @@ extension ColorWithValuesExt on Color {
     final r = red ?? (this.red / 255.0);
     final g = green ?? (this.green / 255.0);
     final b = blue ?? (this.blue / 255.0);
-    return Color.from(
+    return colorFrom(
       alpha: a,
       red: r,
       green: g,
       blue: b,
-      colorSpace: colorSpace ?? this.colorSpace,
     );
   }
+}
+
+Color colorFrom({
+  required double alpha,
+  required double red,
+  required double green,
+  required double blue,
+}) {
+  int to8bit(double c) => (c.clamp(0.0, 1.0) * 255).round();
+  return Color.fromARGB(
+    to8bit(alpha),
+    to8bit(red),
+    to8bit(green),
+    to8bit(blue),
+  );
 }

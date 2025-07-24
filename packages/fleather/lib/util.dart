@@ -55,11 +55,9 @@ bool isDataOnlyNewLines(Object data) {
 }
 
 extension Color32BitsExtension on Color {
-  int _floatToInt8(double x) => (x * 255.0).round() & 0xff;
-
   int get value32Bits =>
-      _floatToInt8(a) << 24 |
-      _floatToInt8(r) << 16 |
-      _floatToInt8(g) << 8 |
-      _floatToInt8(b) << 0;
+      (alpha & 0xff) << 24 |
+      (red & 0xff) << 16 |
+      (green & 0xff) << 8 |
+      (blue & 0xff);
 }
