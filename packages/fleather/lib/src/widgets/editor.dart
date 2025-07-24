@@ -25,7 +25,6 @@ import 'history.dart';
 import 'keyboard_listener.dart';
 import 'link.dart';
 import 'shortcuts.dart';
-import 'system_context_menu.dart';
 import 'text_line.dart';
 import 'text_selection.dart';
 import 'theme.dart';
@@ -47,11 +46,12 @@ typedef FleatherContextMenuBuilder = Widget Function(
 /// Default implementation of a widget builder function for context menu.
 Widget defaultContextMenuBuilder(
     BuildContext context, EditorState editorState) {
-  if (defaultTargetPlatform == TargetPlatform.iOS &&
-      SystemContextMenu.isSupported(context) &&
-      !editorState.widget.readOnly) {
-    return SystemContextMenu.editor(editorState: editorState);
-  }
+  //TODO - Bring back in the SystemContextMenu - it looks like might not be needed
+  // if (defaultTargetPlatform == TargetPlatform.iOS &&
+  //     SystemContextMenu.isSupported(context) &&
+  //     !editorState.widget.readOnly) {
+  //   return SystemContextMenu.editor(editorState: editorState);
+  // }
   return AdaptiveTextSelectionToolbar.buttonItems(
     buttonItems: editorState.contextMenuButtonItems,
     anchors: editorState.contextMenuAnchors,

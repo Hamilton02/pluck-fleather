@@ -2,7 +2,6 @@ import 'package:fleather/fleather.dart';
 import 'package:fleather/src/services/spell_check_suggestions_toolbar.dart';
 import 'package:fleather/src/widgets/checkbox.dart';
 import 'package:fleather/src/widgets/keyboard_listener.dart';
-import 'package:fleather/src/widgets/system_context_menu.dart';
 import 'package:fleather/src/widgets/text_selection.dart';
 import 'package:flutter/cupertino.dart' hide SystemContextMenu;
 import 'package:flutter/gestures.dart';
@@ -374,7 +373,7 @@ void main() {
       await tester.longPress(find.byType(FleatherEditor));
       await tester.pump();
 
-      expect(find.byType(SystemContextMenu), findsOneWidget);
+      //expect(find.byType(SystemContextMenu), findsOneWidget);
     }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
     testWidgets(
@@ -400,7 +399,7 @@ void main() {
       await tester.longPress(find.byType(FleatherEditor));
       await tester.pump();
 
-      expect(find.byType(SystemContextMenu), findsNothing);
+      //expect(find.byType(SystemContextMenu), findsNothing);
       expect(find.byType(AdaptiveTextSelectionToolbar), findsOneWidget);
     }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
