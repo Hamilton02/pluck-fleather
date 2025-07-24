@@ -61,6 +61,14 @@ class ParchmentDocument {
     _loadDocument(_delta);
   }
 
+  /// Creates new ParchmentDocument from provided JSON `data`.
+  ParchmentDocument.fromMarkdown(String markdown,
+      {ParchmentHeuristics heuristics = ParchmentHeuristics.fallback})
+      : _heuristics = heuristics,
+        _delta = _migrateDelta(Delta.fromJson(markdownToDelta(markdown))) {
+    _loadDocument(_delta);
+  }
+
   final ParchmentHeuristics _heuristics;
 
   /// The root node of this document tree.
@@ -332,5 +340,167 @@ class ParchmentDocument {
         _root.childCount > 1) {
       _root.remove(node);
     }
+  }
+
+  static List<Map<String, dynamic>> markdownToDelta(String markdown) {
+    final lines = markdown.split(RegExp(r'\r?\n'));
+    final ops = <Map<String, dynamic>>[];
+
+    List<Map<String, dynamic>> inlinePatterns = [
+      {
+        'regex': RegExp(r'\*\*(.+?)\*\*'),
+        'attr': {'bold': true},
+      },
+      {
+        'regex': RegExp(r'__(.+?)__'),
+        'attr': {'bold': true},
+      },
+      {
+        'regex': RegExp(r'\*(.+?)\*'),
+        'attr': {'italic': true},
+      },
+      {
+        'regex': RegExp(r'_(.+?)_'),
+        'attr': {'italic': true},
+      },
+      {
+        'regex': RegExp(r'~~(.+?)~~'),
+        'attr': {'strike': true},
+      },
+      {
+        'regex': RegExp(r'`(.+?)`'),
+        'attr': {'code': true},
+      },
+      {
+        'regex': RegExp(r'\[([^\]]+)\]\(([^)]+)\)'),
+        'attr': (Match m) => {'link': m.group(2)},
+      },
+    ];
+
+    List<Map<String, dynamic>> parseInline(String text,
+        [Map<String, dynamic>? inherited]) {
+      for (var pattern in inlinePatterns) {
+        final regex = pattern['regex'] as RegExp;
+        final match = regex.firstMatch(text);
+        if (match != null) {
+          final before = text.substring(0, match.start);
+          final content = match.group(1)!;
+          final after = text.substring(match.end);
+          final attr = pattern['attr'] is Function
+              ? pattern['attr'](match)
+              : Map<String, dynamic>.from(pattern['attr']);
+
+          final newAttrs = Map<String, dynamic>.from(inherited ?? {});
+          newAttrs.addAll(attr);
+
+          return [
+            ...parseInline(before, inherited),
+            ...parseInline(content, newAttrs),
+            ...parseInline(after, inherited)
+          ];
+        }
+      }
+
+      if (text.isEmpty) return [];
+      final op = <String, dynamic>{'insert': text};
+      if (inherited != null && inherited.isNotEmpty) {
+        op['attributes'] = inherited;
+      }
+      return [op];
+    }
+
+    int i = 0;
+    while (i < lines.length) {
+      final line = lines[i];
+
+      // Fenced code block
+      if (line.startsWith('```')) {
+        final language = line.substring(3).trim();
+        i++;
+        final buffer = StringBuffer();
+        while (i < lines.length && !lines[i].startsWith('```')) {
+          buffer.writeln(lines[i]);
+          i++;
+        }
+        i++; // Skip closing ```
+        ops.add({
+          'insert': buffer.toString(),
+          'attributes': {
+            'code-block': true,
+            if (language.isNotEmpty) 'language': language
+          }
+        });
+        continue;
+      }
+
+      // Blockquote
+      if (line.startsWith('>')) {
+        final buffer = StringBuffer();
+        while (i < lines.length && lines[i].startsWith('>')) {
+          final quoteLine = lines[i].replaceFirst(RegExp(r'^>\s?'), '');
+          buffer.writeln(quoteLine);
+          i++;
+        }
+        final block = buffer.toString().trimRight();
+        ops.addAll(parseInline(block));
+        ops.add({
+          'insert': '\n',
+          'attributes': {'blockquote': true}
+        });
+        continue;
+      }
+
+      // Header
+      final headerMatch = RegExp(r'^(#{1,6})\s+(.*)').firstMatch(line);
+      if (headerMatch != null) {
+        final level = headerMatch.group(1)!.length;
+        final content = headerMatch.group(2)!;
+        ops.addAll(parseInline(content));
+        ops.add({
+          'insert': '\n',
+          'attributes': {'header': level}
+        });
+        i++;
+        continue;
+      }
+
+      // Unordered list
+      final ulMatch = RegExp(r'^[-*+]\s+(.*)').firstMatch(line);
+      if (ulMatch != null) {
+        ops.addAll(parseInline(ulMatch.group(1)!));
+        ops.add({
+          'insert': '\n',
+          'attributes': {'list': 'bullet'}
+        });
+        i++;
+        continue;
+      }
+
+      // Ordered list
+      final olMatch = RegExp(r'^\d+\.\s+(.*)').firstMatch(line);
+      if (olMatch != null) {
+        ops.addAll(parseInline(olMatch.group(1)!));
+        ops.add({
+          'insert': '\n',
+          'attributes': {'list': 'ordered'}
+        });
+        i++;
+        continue;
+      }
+
+      // Blank line
+      if (line.trim().isEmpty) {
+        ops.add({'insert': '\n'});
+        i++;
+        continue;
+      }
+
+      // Paragraph
+      ops.addAll(parseInline(line));
+      ops.add({'insert': '\n'});
+      i++;
+    }
+
+    return ops;
   }
 }
