@@ -297,6 +297,8 @@ class FleatherEditor extends StatefulWidget {
 
   final TextSelectionControls? textSelectionControls;
 
+  final FleatherThemeData? themeData;
+
   const FleatherEditor(
       {super.key,
       required this.controller,
@@ -325,7 +327,8 @@ class FleatherEditor extends StatefulWidget {
       this.contextMenuBuilder = defaultContextMenuBuilder,
       this.embedBuilder = defaultFleatherEmbedBuilder,
       this.linkActionPickerDelegate = defaultLinkActionPickerDelegate,
-      this.textSelectionControls});
+      this.textSelectionControls,
+      this.themeData});
 
   @override
   State<FleatherEditor> createState() => _FleatherEditorState();
@@ -577,39 +580,40 @@ class _FleatherEditorSelectionGestureDetectorBuilder
 }
 
 class RawEditor extends StatefulWidget {
-  const RawEditor({
-    super.key,
-    required this.controller,
-    this.focusNode,
-    this.scrollController,
-    this.scrollable = true,
-    this.padding = EdgeInsets.zero,
-    this.autofocus = false,
-    bool? showCursor,
-    this.readOnly = false,
-    this.autocorrect = true,
-    this.enableSuggestions = true,
-    this.enableInteractiveSelection = true,
-    this.minHeight,
-    this.maxHeight,
-    this.maxContentWidth,
-    this.expands = false,
-    this.textCapitalization = TextCapitalization.none,
-    this.keyboardAppearance = Brightness.light,
-    this.onLaunchUrl,
-    required this.selectionColor,
-    this.scrollPhysics,
-    required this.cursorStyle,
-    required this.clipboardManager,
-    required this.clipboardStatus,
-    this.showSelectionHandles = false,
-    this.selectionControls,
-    this.onSelectionChanged,
-    this.contextMenuBuilder = defaultContextMenuBuilder,
-    this.spellCheckConfiguration,
-    this.embedBuilder = defaultFleatherEmbedBuilder,
-    this.linkActionPickerDelegate = defaultLinkActionPickerDelegate,
-  })  : assert(maxHeight == null || maxHeight > 0),
+  const RawEditor(
+      {super.key,
+      required this.controller,
+      this.focusNode,
+      this.scrollController,
+      this.scrollable = true,
+      this.padding = EdgeInsets.zero,
+      this.autofocus = false,
+      bool? showCursor,
+      this.readOnly = false,
+      this.autocorrect = true,
+      this.enableSuggestions = true,
+      this.enableInteractiveSelection = true,
+      this.minHeight,
+      this.maxHeight,
+      this.maxContentWidth,
+      this.expands = false,
+      this.textCapitalization = TextCapitalization.none,
+      this.keyboardAppearance = Brightness.light,
+      this.onLaunchUrl,
+      required this.selectionColor,
+      this.scrollPhysics,
+      required this.cursorStyle,
+      required this.clipboardManager,
+      required this.clipboardStatus,
+      this.showSelectionHandles = false,
+      this.selectionControls,
+      this.onSelectionChanged,
+      this.contextMenuBuilder = defaultContextMenuBuilder,
+      this.spellCheckConfiguration,
+      this.embedBuilder = defaultFleatherEmbedBuilder,
+      this.linkActionPickerDelegate = defaultLinkActionPickerDelegate,
+      this.themeData})
+      : assert(maxHeight == null || maxHeight > 0),
         assert(minHeight == null || minHeight >= 0),
         assert(
           (maxHeight == null) ||
@@ -792,6 +796,8 @@ class RawEditor extends StatefulWidget {
   final ClipboardManager clipboardManager;
 
   final ClipboardStatusNotifier clipboardStatus;
+
+  final FleatherThemeData? themeData;
 
   bool get selectionEnabled => enableInteractiveSelection;
 
@@ -1769,7 +1775,7 @@ class RawEditorState extends EditorState
             maxHeight: widget.maxHeight ?? double.infinity);
 
     return FleatherTheme(
-      data: _themeData,
+      data: widget.themeData ?? _themeData,
       child: MouseRegion(
         cursor: SystemMouseCursors.text,
         child: Actions(
