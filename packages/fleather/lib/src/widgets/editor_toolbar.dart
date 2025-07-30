@@ -117,12 +117,12 @@ enum _UndoRedoButtonVariant {
 class LinkStyleButton extends StatefulWidget {
   final FleatherController controller;
   final IconData? icon;
+  final Widget Function(
+          void Function(String link) linkChanged, void Function() applyLink)?
+      customLinkDialog;
 
-  const LinkStyleButton({
-    super.key,
-    required this.controller,
-    this.icon,
-  });
+  const LinkStyleButton(
+      {super.key, required this.controller, this.icon, this.customLinkDialog});
 
   @override
   State<LinkStyleButton> createState() => _LinkStyleButtonState();
@@ -177,7 +177,9 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     showDialog<String>(
       context: context,
       builder: (ctx) {
-        return const _LinkDialog();
+        return _LinkDialog(
+          customLinkDialog: widget.customLinkDialog,
+        );
       },
     ).then(_linkSubmitted);
   }
@@ -191,7 +193,11 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 }
 
 class _LinkDialog extends StatefulWidget {
-  const _LinkDialog();
+  const _LinkDialog({this.customLinkDialog});
+
+  final Widget Function(
+          void Function(String link) linkChanged, void Function() applyLink)?
+      customLinkDialog;
 
   @override
   _LinkDialogState createState() => _LinkDialogState();
@@ -203,13 +209,15 @@ class _LinkDialogState extends State<_LinkDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      content: TextField(
-        decoration: InputDecoration(
-          labelText: context.l.addLinkDialogPasteLink,
-        ),
-        autofocus: true,
-        onChanged: _linkChanged,
-      ),
+      content: widget.customLinkDialog != null
+          ? widget.customLinkDialog!(_linkChanged, _applyLink)
+          : TextField(
+              decoration: InputDecoration(
+                labelText: context.l.addLinkDialogPasteLink,
+              ),
+              autofocus: true,
+              onChanged: _linkChanged,
+            ),
       actions: [
         TextButton(
           onPressed: _link.isNotEmpty ? _applyLink : null,
@@ -823,40 +831,44 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
   /// If provided, toolbar requests focus and keyboard on toolbar buttons press.
   final GlobalKey<EditorState>? editorKey;
 
-  const FleatherToolbar({
-    super.key,
-    this.editorKey,
-    this.padding,
-    required this.children,
-  });
+  final Widget? customLinkDialog;
 
-  factory FleatherToolbar.basic({
-    Key? key,
-    required FleatherController controller,
-    EdgeInsetsGeometry? padding,
-    bool hideBoldButton = false,
-    bool hideItalicButton = false,
-    bool hideUnderLineButton = false,
-    bool hideStrikeThrough = false,
-    bool hideBackgroundColor = false,
-    bool hideForegroundColor = false,
-    bool hideInlineCode = false,
-    bool hideHeadingStyle = false,
-    bool hideIndentation = false,
-    bool hideListNumbers = false,
-    bool hideListBullets = false,
-    bool hideListChecks = false,
-    bool hideCodeBlock = false,
-    bool hideQuote = false,
-    bool hideLink = false,
-    bool hideHorizontalRule = false,
-    bool hideDirection = false,
-    bool hideUndoRedo = false,
-    List<Widget> leading = const <Widget>[],
-    List<Widget> trailing = const <Widget>[],
-    bool hideAlignment = false,
-    GlobalKey<EditorState>? editorKey,
-  }) {
+  const FleatherToolbar(
+      {super.key,
+      this.editorKey,
+      this.padding,
+      required this.children,
+      this.customLinkDialog});
+
+  factory FleatherToolbar.basic(
+      {Key? key,
+      required FleatherController controller,
+      EdgeInsetsGeometry? padding,
+      bool hideBoldButton = false,
+      bool hideItalicButton = false,
+      bool hideUnderLineButton = false,
+      bool hideStrikeThrough = false,
+      bool hideBackgroundColor = false,
+      bool hideForegroundColor = false,
+      bool hideInlineCode = false,
+      bool hideHeadingStyle = false,
+      bool hideIndentation = false,
+      bool hideListNumbers = false,
+      bool hideListBullets = false,
+      bool hideListChecks = false,
+      bool hideCodeBlock = false,
+      bool hideQuote = false,
+      bool hideLink = false,
+      bool hideHorizontalRule = false,
+      bool hideDirection = false,
+      bool hideUndoRedo = false,
+      List<Widget> leading = const <Widget>[],
+      List<Widget> trailing = const <Widget>[],
+      bool hideAlignment = false,
+      GlobalKey<EditorState>? editorKey,
+      Widget Function(void Function(String link) linkChanged,
+              void Function() applyLink)?
+          customLinkDialog}) {
     Widget backgroundColorBuilder(context, value) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1122,7 +1134,11 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
         /// ################################################################
 
         Visibility(
-            visible: !hideLink, child: LinkStyleButton(controller: controller)),
+            visible: !hideLink,
+            child: LinkStyleButton(
+              controller: controller,
+              customLinkDialog: customLinkDialog,
+            )),
         Visibility(
           visible: !hideHorizontalRule,
           child: InsertEmbedButton(
