@@ -926,7 +926,7 @@ class RawEditorState extends EditorState
   late FleatherThemeData _themeData;
 
   @override
-  FleatherThemeData get themeData => _themeData;
+  FleatherThemeData get themeData => widget.themeData ?? _themeData;
 
   // Cursors
   late CursorController _cursorController;
@@ -1405,9 +1405,10 @@ class RawEditorState extends EditorState
     super.didChangeDependencies();
     final parentTheme = FleatherTheme.of(context, nullOk: true);
     final fallbackTheme = FleatherThemeData.fallback(context);
-    _themeData = (parentTheme != null)
-        ? fallbackTheme.merge(parentTheme)
-        : fallbackTheme;
+    _themeData = widget.themeData ??
+        ((parentTheme != null)
+            ? fallbackTheme.merge(parentTheme)
+            : fallbackTheme);
 
     if (!_didAutoFocus && widget.autofocus) {
       FocusScope.of(context).autofocus(effectiveFocusNode);
