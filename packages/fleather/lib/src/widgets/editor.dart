@@ -1406,7 +1406,7 @@ class RawEditorState extends EditorState
     final parentTheme = FleatherTheme.of(context, nullOk: true);
     final fallbackTheme = FleatherThemeData.fallback(context);
     _themeData = widget.themeData != null
-        ? fallbackTheme.merge(widget.themeData!)
+        ? widget.themeData!
         : ((parentTheme != null)
             ? fallbackTheme.merge(parentTheme)
             : fallbackTheme);
