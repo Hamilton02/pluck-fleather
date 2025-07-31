@@ -289,11 +289,11 @@ class _TextLineState extends State<TextLine> {
   TextStyle _getInlineTextStyle(ParchmentStyle nodeStyle,
       ParchmentStyle lineStyle, FleatherThemeData theme) {
     var result = const TextStyle();
-    if (nodeStyle.containsSame(ParchmentAttribute.bold)) {
-      result = _mergeTextStyleWithDecoration(result, theme.bold);
-    }
     if (nodeStyle.containsSame(ParchmentAttribute.italic)) {
       result = _mergeTextStyleWithDecoration(result, theme.italic);
+    }
+    if (nodeStyle.containsSame(ParchmentAttribute.bold)) {
+      result = _mergeTextStyleWithDecoration(result, theme.bold);
     }
     if (nodeStyle.contains(ParchmentAttribute.link)) {
       result = _mergeTextStyleWithDecoration(result, theme.link);
@@ -319,7 +319,6 @@ class _TextLineState extends State<TextLine> {
   }
 
   TextStyle _mergeTextStyleWithDecoration(TextStyle a, TextStyle? b) {
-    print('MERGING a: ${a.toString()} b: ${b.toString()}');
     var decorations = <TextDecoration>[];
     if (a.decoration != null) {
       decorations.add(a.decoration!);
