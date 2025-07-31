@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -317,6 +319,7 @@ class _TextLineState extends State<TextLine> {
   }
 
   TextStyle _mergeTextStyleWithDecoration(TextStyle a, TextStyle? b) {
+    print('MERGING a: ${a.toString()} b: ${b.toString()}');
     var decorations = <TextDecoration>[];
     if (a.decoration != null) {
       decorations.add(a.decoration!);
