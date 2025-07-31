@@ -325,6 +325,6 @@ class _TextLineState extends State<TextLine> {
     if (b?.decoration != null) {
       decorations.add(b!.decoration!);
     }
-    return a.merge(b);
+    return a.merge(b).apply(decoration: TextDecoration.combine(decorations));
   }
 }
