@@ -290,9 +290,6 @@ class _TextLineState extends State<TextLine> {
     if (nodeStyle.containsSame(ParchmentAttribute.italic)) {
       result = _mergeTextStyleWithDecoration(result, theme.italic);
     }
-    if (nodeStyle.containsSame(ParchmentAttribute.bold)) {
-      result = _mergeTextStyleWithDecoration(result, theme.bold);
-    }
     if (nodeStyle.contains(ParchmentAttribute.link)) {
       result = _mergeTextStyleWithDecoration(result, theme.link);
     }
@@ -301,6 +298,9 @@ class _TextLineState extends State<TextLine> {
     }
     if (nodeStyle.contains(ParchmentAttribute.strikethrough)) {
       result = _mergeTextStyleWithDecoration(result, theme.strikethrough);
+    }
+    if (nodeStyle.containsSame(ParchmentAttribute.bold)) {
+      result = _mergeTextStyleWithDecoration(result, theme.bold);
     }
     if (nodeStyle.contains(ParchmentAttribute.inlineCode)) {
       result = _mergeTextStyleWithDecoration(
