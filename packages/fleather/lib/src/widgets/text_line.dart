@@ -319,7 +319,6 @@ class _TextLineState extends State<TextLine> {
   TextStyle _mergeTextStyleWithDecoration(TextStyle a, TextStyle? b) {
     var decorations = <TextDecoration>[];
 
-    print('MERGING DECORATIONS:\n a -${a} \n b- ${b}');
     if (a.decoration != null) {
       decorations.add(a.decoration!);
     }
