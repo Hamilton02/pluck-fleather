@@ -478,7 +478,6 @@ class _FleatherEditorState extends State<FleatherEditor>
     }
 
     Widget child = RawEditor(
-      themeData: widget.themeData,
       key: editableTextKey,
       controller: widget.controller,
       focusNode: widget.focusNode,
