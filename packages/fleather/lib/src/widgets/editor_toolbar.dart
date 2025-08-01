@@ -242,12 +242,13 @@ class _LinkDialogState extends State<_LinkDialog> {
 ///
 /// See [defaultToggleStyleButtonBuilder] as a reference implementation.
 typedef ToggleStyleButtonBuilder = Widget Function(
-  BuildContext context,
-  ParchmentAttribute attribute,
-  IconData icon,
-  bool isToggled,
-  VoidCallback? onPressed,
-);
+    BuildContext context,
+    ParchmentAttribute attribute,
+    IconData icon,
+    bool isToggled,
+    VoidCallback? onPressed,
+    Color? onColor,
+    Color? offColor);
 
 /// Toolbar button which allows to toggle a style attribute on or off.
 class ToggleStyleButton extends StatefulWidget {
@@ -263,13 +264,17 @@ class ToggleStyleButton extends StatefulWidget {
   /// Builder function to customize visual representation of this button.
   final ToggleStyleButtonBuilder childBuilder;
 
-  const ToggleStyleButton({
-    super.key,
-    required this.attribute,
-    required this.icon,
-    required this.controller,
-    this.childBuilder = defaultToggleStyleButtonBuilder,
-  });
+  final Color? onColor;
+  final Color? offColor;
+
+  const ToggleStyleButton(
+      {super.key,
+      required this.attribute,
+      required this.icon,
+      required this.controller,
+      this.childBuilder = defaultToggleStyleButtonBuilder,
+      this.onColor,
+      this.offColor});
 
   @override
   State<ToggleStyleButton> createState() => _ToggleStyleButtonState();
@@ -317,8 +322,14 @@ class _ToggleStyleButtonState extends State<ToggleStyleButton> {
         _selectionStyle.containsSame(ParchmentAttribute.block.code);
     final isEnabled =
         !isInCodeBlock || widget.attribute == ParchmentAttribute.block.code;
-    return widget.childBuilder(context, widget.attribute, widget.icon,
-        _isToggled, isEnabled ? _toggleAttribute : null);
+    return widget.childBuilder(
+        context,
+        widget.attribute,
+        widget.icon,
+        _isToggled,
+        isEnabled ? _toggleAttribute : null,
+        widget.onColor,
+        widget.offColor);
   }
 
   void _toggleAttribute() {
@@ -348,6 +359,8 @@ Widget defaultToggleStyleButtonBuilder(
   IconData icon,
   bool isToggled,
   VoidCallback? onPressed,
+  Color? onColor,
+  Color? offColor,
 ) {
   final theme = Theme.of(context);
   final isEnabled = onPressed != null;
@@ -356,7 +369,9 @@ Widget defaultToggleStyleButtonBuilder(
           ? theme.primaryIconTheme.color
           : theme.iconTheme.color
       : theme.disabledColor;
-  final fillColor = isToggled ? theme.colorScheme.secondary : theme.canvasColor;
+  final fillColor = isToggled
+      ? onColor ?? theme.colorScheme.secondary
+      : offColor ?? theme.canvasColor;
   return FLIconButton(
     highlightElevation: 0,
     hoverElevation: 0,
@@ -866,6 +881,8 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
       List<Widget> trailing = const <Widget>[],
       bool hideAlignment = false,
       GlobalKey<EditorState>? editorKey,
+      Color? buttonOnColor,
+      Color? buttonOffColor,
       Widget Function(void Function(String link) linkChanged,
               void Function() applyLink)?
           customLinkDialog}) {
