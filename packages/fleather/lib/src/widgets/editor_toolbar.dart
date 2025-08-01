@@ -248,7 +248,8 @@ typedef ToggleStyleButtonBuilder = Widget Function(
     bool isToggled,
     VoidCallback? onPressed,
     Color? onColor,
-    Color? offColor);
+    Color? offColor,
+    BoxDecoration? buttonDecoration);
 
 /// Toolbar button which allows to toggle a style attribute on or off.
 class ToggleStyleButton extends StatefulWidget {
@@ -266,6 +267,7 @@ class ToggleStyleButton extends StatefulWidget {
 
   final Color? onColor;
   final Color? offColor;
+  final BoxDecoration? buttonDecoration;
 
   const ToggleStyleButton(
       {super.key,
@@ -274,7 +276,8 @@ class ToggleStyleButton extends StatefulWidget {
       required this.controller,
       this.childBuilder = defaultToggleStyleButtonBuilder,
       this.onColor,
-      this.offColor});
+      this.offColor,
+      this.buttonDecoration});
 
   @override
   State<ToggleStyleButton> createState() => _ToggleStyleButtonState();
@@ -329,7 +332,8 @@ class _ToggleStyleButtonState extends State<ToggleStyleButton> {
         _isToggled,
         isEnabled ? _toggleAttribute : null,
         widget.onColor,
-        widget.offColor);
+        widget.offColor,
+        widget.buttonDecoration);
   }
 
   void _toggleAttribute() {
@@ -354,14 +358,14 @@ class _ToggleStyleButtonState extends State<ToggleStyleButton> {
 
 /// Default builder for toggle style buttons.
 Widget defaultToggleStyleButtonBuilder(
-  BuildContext context,
-  ParchmentAttribute attribute,
-  IconData icon,
-  bool isToggled,
-  VoidCallback? onPressed,
-  Color? onColor,
-  Color? offColor,
-) {
+    BuildContext context,
+    ParchmentAttribute attribute,
+    IconData icon,
+    bool isToggled,
+    VoidCallback? onPressed,
+    Color? onColor,
+    Color? offColor,
+    BoxDecoration? buttonDecoration) {
   final theme = Theme.of(context);
   final isEnabled = onPressed != null;
   final iconColor = isEnabled
@@ -379,6 +383,7 @@ Widget defaultToggleStyleButtonBuilder(
     icon: Icon(icon, size: 18, color: iconColor),
     fillColor: fillColor,
     onPressed: onPressed,
+    buttonDecoration: buttonDecoration,
   );
 }
 
@@ -883,6 +888,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
       GlobalKey<EditorState>? editorKey,
       Color? buttonOnColor,
       Color? buttonOffColor,
+      BoxDecoration? buttonDecoration,
       Widget Function(void Function(String link) linkChanged,
               void Function() applyLink)?
           customLinkDialog}) {
@@ -937,6 +943,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             controller: controller,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         const SizedBox(width: 1),
@@ -948,6 +955,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             controller: controller,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         const SizedBox(width: 1),
@@ -959,6 +967,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             controller: controller,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         const SizedBox(width: 1),
@@ -970,6 +979,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             controller: controller,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         const SizedBox(width: 1),
@@ -1004,6 +1014,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             controller: controller,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         Visibility(
@@ -1025,6 +1036,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
               controller: controller,
               onColor: buttonOnColor,
               offColor: buttonOffColor,
+              buttonDecoration: buttonDecoration,
             )),
         Visibility(
             visible: !hideDirection,
@@ -1041,6 +1053,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             controller: controller,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         const SizedBox(width: 1),
@@ -1052,6 +1065,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             controller: controller,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         const SizedBox(width: 1),
@@ -1074,6 +1088,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             controller: controller,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         Visibility(
@@ -1120,6 +1135,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             icon: Icons.format_list_numbered,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
 
@@ -1131,6 +1147,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             icon: Icons.format_list_bulleted,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         Visibility(
@@ -1141,6 +1158,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             icon: Icons.checklist,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         Visibility(
@@ -1151,6 +1169,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             icon: Icons.code,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         Visibility(
@@ -1171,6 +1190,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
             icon: Icons.format_quote,
             onColor: buttonOnColor,
             offColor: buttonOffColor,
+            buttonDecoration: buttonDecoration,
           ),
         ),
         Visibility(
@@ -1274,20 +1294,22 @@ class FLIconButton extends StatelessWidget {
   final Color? fillColor;
   final double hoverElevation;
   final double highlightElevation;
+  final BoxDecoration? buttonDecoration;
 
-  const FLIconButton({
-    super.key,
-    required this.onPressed,
-    this.icon,
-    this.size = 40,
-    this.fillColor,
-    this.hoverElevation = 1,
-    this.highlightElevation = 1,
-  });
+  const FLIconButton(
+      {super.key,
+      required this.onPressed,
+      this.icon,
+      this.size = 40,
+      this.fillColor,
+      this.hoverElevation = 1,
+      this.highlightElevation = 1,
+      this.buttonDecoration});
 
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
+    return Container(
+      decoration: buttonDecoration?.copyWith(color: fillColor),
       constraints: BoxConstraints.tightFor(width: size, height: size),
       child: RawMaterialButton(
         visualDensity: VisualDensity.compact,
