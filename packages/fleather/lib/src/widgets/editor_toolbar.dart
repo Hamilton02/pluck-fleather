@@ -14,16 +14,20 @@ const double kToolbarHeight = 56.0;
 class InsertEmbedButton extends StatelessWidget {
   final FleatherController controller;
   final IconData icon;
+  final BoxDecoration? customBoxDecoration;
+  final Color? onColor;
 
-  const InsertEmbedButton({
-    super.key,
-    required this.controller,
-    required this.icon,
-  });
+  const InsertEmbedButton(
+      {super.key,
+      required this.controller,
+      required this.icon,
+      this.customBoxDecoration,
+      this.onColor});
 
   @override
   Widget build(BuildContext context) {
     return FLIconButton(
+      buttonDecoration: customBoxDecoration,
       highlightElevation: 0,
       hoverElevation: 0,
       size: 32,
@@ -32,7 +36,7 @@ class InsertEmbedButton extends StatelessWidget {
         size: 18,
         color: Theme.of(context).iconTheme.color,
       ),
-      fillColor: Theme.of(context).canvasColor,
+      fillColor: onColor ?? Theme.of(context).canvasColor,
       onPressed: () {
         final index = controller.selection.baseOffset;
         final length = controller.selection.extentOffset - index;
@@ -53,18 +57,31 @@ class InsertEmbedButton extends StatelessWidget {
 class UndoRedoButton extends StatelessWidget {
   final FleatherController controller;
   final _UndoRedoButtonVariant _variant;
+  final BoxDecoration? customBoxDecoration;
+  final Color? onColor;
 
-  const UndoRedoButton._(this.controller, this._variant, {super.key});
+  const UndoRedoButton._(this.controller, this._variant,
+      {super.key, this.customBoxDecoration, this.onColor});
 
-  const UndoRedoButton.undo({
-    Key? key,
-    required FleatherController controller,
-  }) : this._(controller, _UndoRedoButtonVariant.undo, key: key);
+  const UndoRedoButton.undo(
+      {Key? key,
+      required FleatherController controller,
+      BoxDecoration? customBoxDecoration,
+      Color? onColor})
+      : this._(controller, _UndoRedoButtonVariant.undo,
+            key: key,
+            onColor: onColor,
+            customBoxDecoration: customBoxDecoration);
 
-  const UndoRedoButton.redo({
-    Key? key,
-    required FleatherController controller,
-  }) : this._(controller, _UndoRedoButtonVariant.redo, key: key);
+  const UndoRedoButton.redo(
+      {Key? key,
+      required FleatherController controller,
+      BoxDecoration? customBoxDecoration,
+      Color? onColor})
+      : this._(controller, _UndoRedoButtonVariant.redo,
+            key: key,
+            onColor: onColor,
+            customBoxDecoration: customBoxDecoration);
 
   bool _isEnabled() {
     if (_variant == _UndoRedoButtonVariant.undo) {
@@ -101,8 +118,9 @@ class UndoRedoButton extends StatelessWidget {
               size: 18,
               color: isEnabled ? theme.iconTheme.color : theme.disabledColor,
             ),
-            fillColor: Theme.of(context).canvasColor,
+            fillColor: onColor ?? Theme.of(context).canvasColor,
             onPressed: isEnabled ? _onPressed : null,
+            buttonDecoration: customBoxDecoration,
           );
         });
   }
@@ -117,12 +135,21 @@ enum _UndoRedoButtonVariant {
 class LinkStyleButton extends StatefulWidget {
   final FleatherController controller;
   final IconData? icon;
+  final BoxDecoration? customBoxDecoration;
+  final Color? onColor;
+  final Color? offColor;
   final Widget Function(
           void Function(String link) linkChanged, void Function() applyLink)?
       customLinkDialog;
 
   const LinkStyleButton(
-      {super.key, required this.controller, this.icon, this.customLinkDialog});
+      {super.key,
+      required this.controller,
+      this.icon,
+      this.customLinkDialog,
+      this.customBoxDecoration,
+      this.onColor,
+      this.offColor});
 
   @override
   State<LinkStyleButton> createState() => _LinkStyleButtonState();
@@ -168,8 +195,9 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
         size: 18,
         color: isEnabled ? theme.iconTheme.color : theme.disabledColor,
       ),
-      fillColor: Theme.of(context).canvasColor,
+      fillColor: widget.onColor ?? Theme.of(context).canvasColor,
       onPressed: pressedHandler,
+      buttonDecoration: widget.customBoxDecoration,
     );
   }
 
@@ -770,9 +798,15 @@ class _HeadingListEntry extends StatelessWidget {
 class IndentationButton extends StatefulWidget {
   final bool increase;
   final FleatherController controller;
+  final BoxDecoration? customBoxDecoration;
+  final Color? onColor;
 
   const IndentationButton(
-      {super.key, this.increase = true, required this.controller});
+      {super.key,
+      this.increase = true,
+      required this.controller,
+      this.customBoxDecoration,
+      this.onColor});
 
   @override
   State<IndentationButton> createState() => _IndentationButtonState();
@@ -813,6 +847,7 @@ class _IndentationButtonState extends State<IndentationButton> {
     final theme = Theme.of(context);
     final iconColor = isEnabled ? theme.iconTheme.color : theme.disabledColor;
     return FLIconButton(
+      buttonDecoration: widget.customBoxDecoration,
       highlightElevation: 0,
       hoverElevation: 0,
       size: 32,
@@ -822,7 +857,7 @@ class _IndentationButtonState extends State<IndentationButton> {
               : Icons.format_indent_decrease,
           size: 18,
           color: iconColor),
-      fillColor: theme.canvasColor,
+      fillColor: widget.onColor ?? theme.canvasColor,
       onPressed: isEnabled
           ? () {
               final indentLevel =
@@ -1101,6 +1136,8 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
         Visibility(
           visible: !hideIndentation,
           child: IndentationButton(
+            onColor: buttonOnColor,
+            customBoxDecoration: buttonDecoration,
             increase: false,
             controller: controller,
           ),
@@ -1108,6 +1145,8 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
         Visibility(
           visible: !hideIndentation,
           child: IndentationButton(
+            onColor: buttonOnColor,
+            customBoxDecoration: buttonDecoration,
             controller: controller,
           ),
         ),
@@ -1203,12 +1242,16 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
         Visibility(
             visible: !hideLink,
             child: LinkStyleButton(
+              onColor: buttonOnColor,
+              customBoxDecoration: buttonDecoration,
               controller: controller,
               customLinkDialog: customLinkDialog,
             )),
         Visibility(
           visible: !hideHorizontalRule,
           child: InsertEmbedButton(
+            onColor: buttonOnColor,
+            customBoxDecoration: buttonDecoration,
             controller: controller,
             icon: Icons.horizontal_rule,
           ),
@@ -1224,11 +1267,15 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
           visible: !hideUndoRedo,
           child: UndoRedoButton.undo(
             controller: controller,
+            customBoxDecoration: buttonDecoration,
+            onColor: buttonOnColor,
           ),
         ),
         Visibility(
           visible: !hideUndoRedo,
           child: UndoRedoButton.redo(
+            customBoxDecoration: buttonDecoration,
+            onColor: buttonOnColor,
             controller: controller,
           ),
         ),
