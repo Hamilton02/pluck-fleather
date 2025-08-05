@@ -1473,6 +1473,10 @@ class RawEditorState extends EditorState
         updateConnectionConfig();
       }
     }
+
+    if (widget.themeData != oldWidget.themeData) {
+      _themeData = widget.themeData ?? _themeData;
+    }
   }
 
   @override
