@@ -139,8 +139,9 @@ class LinkStyleButton extends StatefulWidget {
   final Color? onColor;
   final Color? offColor;
   final Widget Function(
-          void Function(String link) linkChanged, void Function() applyLink)?
-      customLinkDialog;
+      void Function(String link) linkChanged,
+      void Function(String text) textChanged,
+      void Function() applyLink)? customLinkDialog;
 
   const LinkStyleButton(
       {super.key,
@@ -201,31 +202,56 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     );
   }
 
+  String _getSelectedText() {
+    final selection = widget.controller.selection;
+    if (selection.isCollapsed) return '';
+
+    final document = widget.controller.document;
+    final plainText = document.toPlainText();
+    return plainText.substring(selection.start, selection.end);
+  }
+
   void _openLinkDialog(BuildContext context) {
-    showDialog<String>(
+    showDialog<Map<String, String>>(
       context: context,
       builder: (ctx) {
         return _LinkDialog(
           customLinkDialog: widget.customLinkDialog,
+          selectedText: _getSelectedText(),
         );
       },
     ).then(_linkSubmitted);
   }
 
-  void _linkSubmitted(String? value) {
-    if (value == null || value.isEmpty) return;
-    widget.controller
-        .formatSelection(ParchmentAttribute.link.fromString(value));
+  void _linkSubmitted(Map<String, String>? value) {
+    if (value == null || value['link'] == null || value['text'] == null) return;
+
+    final selection = widget.controller.selection;
+    final index = selection.start;
+    final length = selection.end - index;
+
+    // Replace the selected text with new text
+    widget.controller.replaceText(index, length, value['text']!);
+
+    // Apply the link attribute to the new text
+    widget.controller.formatText(index, value['text']!.length,
+        ParchmentAttribute.link.fromString(value['link']!));
+
     FleatherToolbar._of(context).requestKeyboard();
   }
 }
 
 class _LinkDialog extends StatefulWidget {
-  const _LinkDialog({this.customLinkDialog});
+  const _LinkDialog({
+    this.customLinkDialog,
+    required this.selectedText,
+  });
 
   final Widget Function(
-          void Function(String link) linkChanged, void Function() applyLink)?
-      customLinkDialog;
+      void Function(String link) linkChanged,
+      void Function(String text) textChanged,
+      void Function() applyLink)? customLinkDialog;
+  final String selectedText;
 
   @override
   _LinkDialogState createState() => _LinkDialogState();
@@ -233,22 +259,50 @@ class _LinkDialog extends StatefulWidget {
 
 class _LinkDialogState extends State<_LinkDialog> {
   String _link = '';
+  String _text = '';
+  late TextEditingController _textController;
+
+  @override
+  void initState() {
+    super.initState();
+    _text = widget.selectedText;
+    _textController = TextEditingController(text: _text);
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       content: widget.customLinkDialog != null
-          ? widget.customLinkDialog!(_linkChanged, _applyLink)
-          : TextField(
-              decoration: InputDecoration(
-                labelText: context.l.addLinkDialogPasteLink,
-              ),
-              autofocus: true,
-              onChanged: _linkChanged,
+          ? widget.customLinkDialog!(_linkChanged, _textChanged, _applyLink)
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: context.l.addLinkDialogPasteLink,
+                  ),
+                  autofocus: true,
+                  onChanged: _linkChanged,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Display Text',
+                  ),
+                  onChanged: _textChanged,
+                  controller: _textController,
+                ),
+              ],
             ),
       actions: [
         TextButton(
-          onPressed: _link.isNotEmpty ? _applyLink : null,
+          onPressed: (_link.isNotEmpty && _text.isNotEmpty) ? _applyLink : null,
           child: Text(context.l.addLinkDialogApply),
         ),
       ],
@@ -261,8 +315,14 @@ class _LinkDialogState extends State<_LinkDialog> {
     });
   }
 
+  void _textChanged(String value) {
+    setState(() {
+      _text = value;
+    });
+  }
+
   void _applyLink() {
-    Navigator.pop(context, _link);
+    Navigator.pop(context, {'link': _link, 'text': _text});
   }
 }
 
@@ -886,7 +946,10 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
   /// If provided, toolbar requests focus and keyboard on toolbar buttons press.
   final GlobalKey<EditorState>? editorKey;
 
-  final Widget? customLinkDialog;
+  final Widget Function(
+      void Function(String link) linkChanged,
+      void Function(String text) textChanged,
+      void Function() applyLink)? customLinkDialog;
 
   const FleatherToolbar(
       {super.key,
@@ -924,7 +987,9 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
       Color? buttonOnColor,
       Color? buttonOffColor,
       BoxDecoration? buttonDecoration,
-      Widget Function(void Function(String link) linkChanged,
+      Widget Function(
+              void Function(String link) linkChanged,
+              void Function(String text) textChanged,
               void Function() applyLink)?
           customLinkDialog}) {
     Widget backgroundColorBuilder(context, value) => Column(
