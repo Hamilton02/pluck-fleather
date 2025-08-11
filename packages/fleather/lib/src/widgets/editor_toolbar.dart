@@ -216,6 +216,8 @@ class LinkStyleButton extends StatefulWidget {
 }
 
 class _LinkStyleButtonState extends State<LinkStyleButton> {
+  OverlayEntry? _currentOverlayEntry;
+
   void _didChangeSelection() {
     setState(() {});
   }
@@ -237,6 +239,7 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
   @override
   void dispose() {
+    _removeOverlay(); // Clean up overlay if widget is disposed
     super.dispose();
     widget.controller.removeListener(_didChangeSelection);
   }
@@ -279,6 +282,11 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     return linkAttribute?.value;
   }
 
+  void _removeOverlay() {
+    _currentOverlayEntry?.remove();
+    _currentOverlayEntry = null;
+  }
+
   void _openLinkDialog(BuildContext context) {
     // Try to capture the toolbar reference before showing the dialog
     final toolbar = context.findAncestorStateOfType<_FleatherToolbarState>();
@@ -298,11 +306,11 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
             // Apply the link
             _linkSubmitted({'link': linkUrl, 'text': displayText}, toolbar);
             // Remove the overlay
-            Navigator.of(ctx).pop();
+            _removeOverlay();
           },
           () {
             // Just close the dialog
-            Navigator.of(ctx).pop();
+            _removeOverlay();
           },
         ),
       );
@@ -364,12 +372,8 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
     overlay.insert(overlayEntry);
 
-    // Add a listener to remove the overlay when the dialog is closed
-    overlayEntry.addListener(() {
-      if (!overlayEntry.mounted) {
-        overlayEntry.remove();
-      }
-    });
+    // Store the overlay entry for removal
+    _currentOverlayEntry = overlayEntry;
   }
 }
 
