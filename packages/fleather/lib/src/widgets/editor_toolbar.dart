@@ -356,28 +356,34 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     late OverlayEntry overlayEntry;
 
     overlayEntry = OverlayEntry(
-      builder: (context) => Material(
-        color: Colors.black54,
-        child: GestureDetector(
-          onTap: () {
-            // Close dialog when tapping outside
-            _removeOverlay();
-          },
-          child: Center(
+      builder: (context) => Stack(
+        children: [
+          // Semi-transparent background that closes dialog when tapped
+          Positioned.fill(
             child: GestureDetector(
-              onTap: () {
-                // Prevent closing when tapping inside the dialog
-              },
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: 400,
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+              onTap: () => _removeOverlay(),
+              child: Container(color: Colors.black54),
+            ),
+          ),
+          // Dialog content
+          Center(
+            child: Material(
+              color: Colors.transparent,
+              child: GestureDetector(
+                onTap: () {
+                  // Prevent closing when tapping inside the dialog
+                },
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: 400,
+                    maxHeight: MediaQuery.of(context).size.height * 0.8,
+                  ),
+                  child: builder(context),
                 ),
-                child: builder(context),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
 
