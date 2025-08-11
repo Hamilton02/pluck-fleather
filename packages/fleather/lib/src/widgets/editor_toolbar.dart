@@ -138,17 +138,6 @@ class LinkStyleButton extends StatefulWidget {
   final BoxDecoration? customBoxDecoration;
   final Color? onColor;
   final Color? offColor;
-  final Widget Function(
-      void Function(String link) linkChanged,
-      void Function(String text) textChanged,
-      void Function() applyLink,
-      String selectedText,
-      String? existingLink)? customLinkDialog;
-
-  /// A fully functional custom dialog widget that handles its own lifecycle.
-  /// This dialog should handle the link creation/editing and call the appropriate
-  /// Fleather controller methods when the user applies the link.
-  final Widget? customLinkDialogWidget;
 
   /// A function that creates a custom dialog widget with the current selection data.
   /// This allows the custom dialog to be pre-populated with the selected text and existing link.
@@ -159,8 +148,6 @@ class LinkStyleButton extends StatefulWidget {
       {super.key,
       required this.controller,
       this.icon,
-      this.customLinkDialog,
-      this.customLinkDialogWidget,
       this.customLinkDialogBuilder,
       this.customBoxDecoration,
       this.onColor,
@@ -305,21 +292,11 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
       return;
     }
 
-    // If a custom dialog widget is provided, show it directly
-    if (widget.customLinkDialogWidget != null) {
-      _showCustomDialog(
-        context: context,
-        builder: (ctx) => widget.customLinkDialogWidget!,
-      );
-      return;
-    }
-
-    // Otherwise, use the function-based approach or default dialog
+    // Otherwise, use the default dialog
     showDialog<Map<String, String>>(
       context: context,
       builder: (ctx) {
         return _LinkDialog(
-          customLinkDialog: widget.customLinkDialog,
           selectedText: selectedText,
           existingLink: existingLink,
         );
@@ -362,10 +339,7 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
               maxWidth: 400,
               maxHeight: MediaQuery.of(context).size.height * 0.8,
             ),
-            child: Card(
-              elevation: 8,
-              child: builder(context),
-            ),
+            child: builder(context),
           ),
         ),
       ),
@@ -384,17 +358,10 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
 class _LinkDialog extends StatefulWidget {
   const _LinkDialog({
-    this.customLinkDialog,
     required this.selectedText,
     this.existingLink,
   });
 
-  final Widget Function(
-      void Function(String link) linkChanged,
-      void Function(String text) textChanged,
-      void Function() applyLink,
-      String selectedText,
-      String? existingLink)? customLinkDialog;
   final String selectedText;
   final String? existingLink;
 
@@ -431,30 +398,27 @@ class _LinkDialogState extends State<_LinkDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      content: widget.customLinkDialog != null
-          ? widget.customLinkDialog!(_linkChanged, _textChanged, _applyLink,
-              widget.selectedText, widget.existingLink)
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: context.l.addLinkDialogPasteLink,
-                  ),
-                  autofocus: true,
-                  onChanged: _linkChanged,
-                  controller: _linkController,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Display Text',
-                  ),
-                  onChanged: _textChanged,
-                  controller: _textController,
-                ),
-              ],
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            decoration: InputDecoration(
+              labelText: context.l.addLinkDialogPasteLink,
             ),
+            autofocus: true,
+            onChanged: _linkChanged,
+            controller: _linkController,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            decoration: InputDecoration(
+              labelText: 'Display Text',
+            ),
+            onChanged: _textChanged,
+            controller: _textController,
+          ),
+        ],
+      ),
       actions: [
         TextButton(
           onPressed: (_link.isNotEmpty && _text.isNotEmpty) ? _applyLink : null,
@@ -1101,18 +1065,6 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
   /// If provided, toolbar requests focus and keyboard on toolbar buttons press.
   final GlobalKey<EditorState>? editorKey;
 
-  final Widget Function(
-      void Function(String link) linkChanged,
-      void Function(String text) textChanged,
-      void Function() applyLink,
-      String selectedText,
-      String? existingLink)? customLinkDialog;
-
-  /// A fully functional custom dialog widget that handles its own lifecycle.
-  /// This dialog should handle the link creation/editing and call the appropriate
-  /// Fleather controller methods when the user applies the link.
-  final Widget? customLinkDialogWidget;
-
   /// A function that creates a custom dialog widget with the current selection data.
   /// This allows the custom dialog to be pre-populated with the selected text and existing link.
   final Widget Function(String selectedText, String? existingLink)?
@@ -1123,8 +1075,6 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
       this.editorKey,
       this.padding,
       required this.children,
-      this.customLinkDialog,
-      this.customLinkDialogWidget,
       this.customLinkDialogBuilder});
 
   factory FleatherToolbar.basic(
@@ -1156,14 +1106,6 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
       Color? buttonOnColor,
       Color? buttonOffColor,
       BoxDecoration? buttonDecoration,
-      Widget Function(
-              void Function(String link) linkChanged,
-              void Function(String text) textChanged,
-              void Function() applyLink,
-              String selectedText,
-              String? existingLink)?
-          customLinkDialog,
-      Widget? customLinkDialogWidget,
       Widget Function(String selectedText, String? existingLink)?
           customLinkDialogBuilder}) {
     Widget backgroundColorBuilder(context, value) => Column(
@@ -1484,8 +1426,6 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
               onColor: buttonOnColor,
               customBoxDecoration: buttonDecoration,
               controller: controller,
-              customLinkDialog: customLinkDialog,
-              customLinkDialogWidget: customLinkDialogWidget,
               customLinkDialogBuilder: customLinkDialogBuilder,
             )),
         Visibility(
