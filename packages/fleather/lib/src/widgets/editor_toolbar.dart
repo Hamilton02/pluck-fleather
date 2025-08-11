@@ -211,6 +211,15 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     return plainText.substring(selection.start, selection.end);
   }
 
+  String? _getExistingLink() {
+    final selection = widget.controller.selection;
+    if (selection.isCollapsed) return null;
+
+    final style = widget.controller.getSelectionStyle();
+    final linkAttribute = style.get(ParchmentAttribute.link);
+    return linkAttribute?.value;
+  }
+
   void _openLinkDialog(BuildContext context) {
     showDialog<Map<String, String>>(
       context: context,
@@ -218,6 +227,7 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
         return _LinkDialog(
           customLinkDialog: widget.customLinkDialog,
           selectedText: _getSelectedText(),
+          existingLink: _getExistingLink(),
         );
       },
     ).then(_linkSubmitted);
@@ -245,6 +255,7 @@ class _LinkDialog extends StatefulWidget {
   const _LinkDialog({
     this.customLinkDialog,
     required this.selectedText,
+    this.existingLink,
   });
 
   final Widget Function(
@@ -252,6 +263,7 @@ class _LinkDialog extends StatefulWidget {
       void Function(String text) textChanged,
       void Function() applyLink)? customLinkDialog;
   final String selectedText;
+  final String? existingLink;
 
   @override
   _LinkDialogState createState() => _LinkDialogState();
@@ -261,17 +273,25 @@ class _LinkDialogState extends State<_LinkDialog> {
   String _link = '';
   String _text = '';
   late TextEditingController _textController;
+  late TextEditingController _linkController;
 
   @override
   void initState() {
     super.initState();
     _text = widget.selectedText;
     _textController = TextEditingController(text: _text);
+
+    // Initialize link field with existing link if available
+    if (widget.existingLink != null) {
+      _link = widget.existingLink!;
+    }
+    _linkController = TextEditingController(text: _link);
   }
 
   @override
   void dispose() {
     _textController.dispose();
+    _linkController.dispose();
     super.dispose();
   }
 
@@ -289,6 +309,7 @@ class _LinkDialogState extends State<_LinkDialog> {
                   ),
                   autofocus: true,
                   onChanged: _linkChanged,
+                  controller: _linkController,
                 ),
                 const SizedBox(height: 16),
                 TextField(
