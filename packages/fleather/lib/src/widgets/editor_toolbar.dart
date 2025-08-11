@@ -141,7 +141,9 @@ class LinkStyleButton extends StatefulWidget {
   final Widget Function(
       void Function(String link) linkChanged,
       void Function(String text) textChanged,
-      void Function() applyLink)? customLinkDialog;
+      void Function() applyLink,
+      String selectedText,
+      String? existingLink)? customLinkDialog;
 
   const LinkStyleButton(
       {super.key,
@@ -266,7 +268,9 @@ class _LinkDialog extends StatefulWidget {
   final Widget Function(
       void Function(String link) linkChanged,
       void Function(String text) textChanged,
-      void Function() applyLink)? customLinkDialog;
+      void Function() applyLink,
+      String selectedText,
+      String? existingLink)? customLinkDialog;
   final String selectedText;
   final String? existingLink;
 
@@ -304,7 +308,8 @@ class _LinkDialogState extends State<_LinkDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       content: widget.customLinkDialog != null
-          ? widget.customLinkDialog!(_linkChanged, _textChanged, _applyLink)
+          ? widget.customLinkDialog!(_linkChanged, _textChanged, _applyLink,
+              widget.selectedText, widget.existingLink)
           : Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -975,7 +980,9 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
   final Widget Function(
       void Function(String link) linkChanged,
       void Function(String text) textChanged,
-      void Function() applyLink)? customLinkDialog;
+      void Function() applyLink,
+      String selectedText,
+      String? existingLink)? customLinkDialog;
 
   const FleatherToolbar(
       {super.key,
@@ -1016,7 +1023,9 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
       Widget Function(
               void Function(String link) linkChanged,
               void Function(String text) textChanged,
-              void Function() applyLink)?
+              void Function() applyLink,
+              String selectedText,
+              String? existingLink)?
           customLinkDialog}) {
     Widget backgroundColorBuilder(context, value) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
