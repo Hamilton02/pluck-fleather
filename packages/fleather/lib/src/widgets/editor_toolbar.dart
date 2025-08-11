@@ -421,7 +421,11 @@ class _LinkDialogState extends State<_LinkDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: (_link.isNotEmpty && _text.isNotEmpty) ? _applyLink : null,
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: _link.isNotEmpty ? _applyLink : null,
           child: Text(context.l.addLinkDialogApply),
         ),
       ],
