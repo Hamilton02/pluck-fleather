@@ -145,11 +145,17 @@ class LinkStyleButton extends StatefulWidget {
       String selectedText,
       String? existingLink)? customLinkDialog;
 
+  /// A fully functional custom dialog widget that handles its own lifecycle.
+  /// This dialog should handle the link creation/editing and call the appropriate
+  /// Fleather controller methods when the user applies the link.
+  final Widget? customLinkDialogWidget;
+
   const LinkStyleButton(
       {super.key,
       required this.controller,
       this.icon,
       this.customLinkDialog,
+      this.customLinkDialogWidget,
       this.customBoxDecoration,
       this.onColor,
       this.offColor});
@@ -266,6 +272,16 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     // Try to capture the toolbar reference before showing the dialog
     final toolbar = context.findAncestorStateOfType<_FleatherToolbarState>();
 
+    // If a custom dialog widget is provided, show it directly
+    if (widget.customLinkDialogWidget != null) {
+      showDialog(
+        context: context,
+        builder: (ctx) => widget.customLinkDialogWidget!,
+      );
+      return;
+    }
+
+    // Otherwise, use the function-based approach or default dialog
     showDialog<Map<String, String>>(
       context: context,
       builder: (ctx) {
@@ -967,8 +983,8 @@ class _IndentationButtonState extends State<IndentationButton> {
 
   @override
   void dispose() {
-    widget.controller.removeListener(_didChangeEditingValue);
     super.dispose();
+    widget.controller.removeListener(_didChangeEditingValue);
   }
 
   @override
@@ -1024,12 +1040,18 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
       String selectedText,
       String? existingLink)? customLinkDialog;
 
+  /// A fully functional custom dialog widget that handles its own lifecycle.
+  /// This dialog should handle the link creation/editing and call the appropriate
+  /// Fleather controller methods when the user applies the link.
+  final Widget? customLinkDialogWidget;
+
   const FleatherToolbar(
       {super.key,
       this.editorKey,
       this.padding,
       required this.children,
-      this.customLinkDialog});
+      this.customLinkDialog,
+      this.customLinkDialogWidget});
 
   factory FleatherToolbar.basic(
       {Key? key,
@@ -1066,7 +1088,8 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
               void Function() applyLink,
               String selectedText,
               String? existingLink)?
-          customLinkDialog}) {
+          customLinkDialog,
+      Widget? customLinkDialogWidget}) {
     Widget backgroundColorBuilder(context, value) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1386,6 +1409,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
               customBoxDecoration: buttonDecoration,
               controller: controller,
               customLinkDialog: customLinkDialog,
+              customLinkDialogWidget: customLinkDialogWidget,
             )),
         Visibility(
           visible: !hideHorizontalRule,
@@ -1477,6 +1501,8 @@ class _FleatherToolbarState extends State<FleatherToolbar> {
           controller: child.controller,
           icon: child.icon,
           customLinkDialog: widget.customLinkDialog ?? child.customLinkDialog,
+          customLinkDialogWidget:
+              widget.customLinkDialogWidget ?? child.customLinkDialogWidget,
           customBoxDecoration: child.customBoxDecoration,
           onColor: child.onColor,
           offColor: child.offColor,
