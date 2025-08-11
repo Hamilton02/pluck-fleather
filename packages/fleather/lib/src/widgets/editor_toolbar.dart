@@ -166,6 +166,19 @@ class LinkStyleButton extends StatefulWidget {
       this.onColor,
       this.offColor});
 
+  /// Static method to remove the link attribute from the current selection
+  /// while keeping the text content intact.
+  static void removeLinkFromSelection(FleatherController controller) {
+    final selection = controller.selection;
+    if (!selection.isValid || selection.isCollapsed) return;
+
+    final index = selection.start;
+    final length = selection.end - index;
+
+    // Remove the link attribute from the selected text
+    controller.formatText(index, length, ParchmentAttribute.link.unset);
+  }
+
   /// Static method to apply a link to the current selection in a controller
   static void applyLinkToSelection(
     FleatherController controller,
