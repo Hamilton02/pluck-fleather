@@ -154,6 +154,46 @@ class LinkStyleButton extends StatefulWidget {
       this.onColor,
       this.offColor});
 
+  /// Static method to apply a link to the current selection in a controller
+  static void applyLinkToSelection(
+    FleatherController controller,
+    String linkUrl,
+    String displayText,
+  ) {
+    final selection = controller.selection;
+    if (!selection.isValid || selection.isCollapsed) return;
+
+    final index = selection.start;
+    final length = selection.end - index;
+
+    // Replace the selected text with new text
+    controller.replaceText(index, length, displayText);
+
+    // Apply the link attribute to the new text
+    controller.formatText(
+        index, displayText.length, ParchmentAttribute.link.fromString(linkUrl));
+  }
+
+  /// Static method to get the currently selected text from a controller
+  static String getSelectedText(FleatherController controller) {
+    final selection = controller.selection;
+    if (selection.isCollapsed) return '';
+
+    final document = controller.document;
+    final plainText = document.toPlainText();
+    return plainText.substring(selection.start, selection.end);
+  }
+
+  /// Static method to get the existing link from the current selection
+  static String? getExistingLink(FleatherController controller) {
+    final selection = controller.selection;
+    if (selection.isCollapsed) return null;
+
+    final style = controller.getSelectionStyle();
+    final linkAttribute = style.get(ParchmentAttribute.link);
+    return linkAttribute?.value;
+  }
+
   @override
   State<LinkStyleButton> createState() => _LinkStyleButtonState();
 }
@@ -306,12 +346,6 @@ class _LinkDialogState extends State<_LinkDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // Debug: Check if custom dialog is provided
-    print(
-        'Custom link dialog: ${widget.customLinkDialog != null ? 'PROVIDED' : 'NOT PROVIDED'}');
-    print('Selected text: "${widget.selectedText}"');
-    print('Existing link: "${widget.existingLink}"');
-
     return AlertDialog(
       content: widget.customLinkDialog != null
           ? widget.customLinkDialog!(_linkChanged, _textChanged, _applyLink,
@@ -1428,12 +1462,28 @@ class _FleatherToolbarState extends State<FleatherToolbar> {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: widget.children,
+              children: _wrapChildrenWithCustomLinkDialog(widget.children),
             ),
           ),
         ),
       ),
     );
+  }
+
+  List<Widget> _wrapChildrenWithCustomLinkDialog(List<Widget> children) {
+    return children.map((child) {
+      if (child is LinkStyleButton) {
+        return LinkStyleButton(
+          controller: child.controller,
+          icon: child.icon,
+          customLinkDialog: widget.customLinkDialog ?? child.customLinkDialog,
+          customBoxDecoration: child.customBoxDecoration,
+          onColor: child.onColor,
+          offColor: child.offColor,
+        );
+      }
+      return child;
+    }).toList();
   }
 }
 
