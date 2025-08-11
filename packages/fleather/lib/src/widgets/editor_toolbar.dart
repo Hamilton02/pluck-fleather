@@ -150,12 +150,18 @@ class LinkStyleButton extends StatefulWidget {
   /// Fleather controller methods when the user applies the link.
   final Widget? customLinkDialogWidget;
 
+  /// A function that creates a custom dialog widget with the current selection data.
+  /// This allows the custom dialog to be pre-populated with the selected text and existing link.
+  final Widget Function(String selectedText, String? existingLink)?
+      customLinkDialogBuilder;
+
   const LinkStyleButton(
       {super.key,
       required this.controller,
       this.icon,
       this.customLinkDialog,
       this.customLinkDialogWidget,
+      this.customLinkDialogBuilder,
       this.customBoxDecoration,
       this.onColor,
       this.offColor});
@@ -272,6 +278,20 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     // Try to capture the toolbar reference before showing the dialog
     final toolbar = context.findAncestorStateOfType<_FleatherToolbarState>();
 
+    // Get the current selection data
+    final selectedText = _getSelectedText();
+    final existingLink = _getExistingLink();
+
+    // If a custom dialog builder is provided, use it with the current selection data
+    if (widget.customLinkDialogBuilder != null) {
+      showDialog(
+        context: context,
+        builder: (ctx) =>
+            widget.customLinkDialogBuilder!(selectedText, existingLink),
+      );
+      return;
+    }
+
     // If a custom dialog widget is provided, show it directly
     if (widget.customLinkDialogWidget != null) {
       showDialog(
@@ -287,8 +307,8 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
       builder: (ctx) {
         return _LinkDialog(
           customLinkDialog: widget.customLinkDialog,
-          selectedText: _getSelectedText(),
-          existingLink: _getExistingLink(),
+          selectedText: selectedText,
+          existingLink: existingLink,
         );
       },
     ).then((value) => _linkSubmitted(value, toolbar));
@@ -1045,13 +1065,19 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
   /// Fleather controller methods when the user applies the link.
   final Widget? customLinkDialogWidget;
 
+  /// A function that creates a custom dialog widget with the current selection data.
+  /// This allows the custom dialog to be pre-populated with the selected text and existing link.
+  final Widget Function(String selectedText, String? existingLink)?
+      customLinkDialogBuilder;
+
   const FleatherToolbar(
       {super.key,
       this.editorKey,
       this.padding,
       required this.children,
       this.customLinkDialog,
-      this.customLinkDialogWidget});
+      this.customLinkDialogWidget,
+      this.customLinkDialogBuilder});
 
   factory FleatherToolbar.basic(
       {Key? key,
@@ -1089,7 +1115,9 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
               String selectedText,
               String? existingLink)?
           customLinkDialog,
-      Widget? customLinkDialogWidget}) {
+      Widget? customLinkDialogWidget,
+      Widget Function(String selectedText, String? existingLink)?
+          customLinkDialogBuilder}) {
     Widget backgroundColorBuilder(context, value) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1410,6 +1438,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
               controller: controller,
               customLinkDialog: customLinkDialog,
               customLinkDialogWidget: customLinkDialogWidget,
+              customLinkDialogBuilder: customLinkDialogBuilder,
             )),
         Visibility(
           visible: !hideHorizontalRule,
@@ -1486,30 +1515,12 @@ class _FleatherToolbarState extends State<FleatherToolbar> {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _wrapChildrenWithCustomLinkDialog(widget.children),
+              children: widget.children,
             ),
           ),
         ),
       ),
     );
-  }
-
-  List<Widget> _wrapChildrenWithCustomLinkDialog(List<Widget> children) {
-    return children.map((child) {
-      if (child is LinkStyleButton) {
-        return LinkStyleButton(
-          controller: child.controller,
-          icon: child.icon,
-          customLinkDialog: widget.customLinkDialog ?? child.customLinkDialog,
-          customLinkDialogWidget:
-              widget.customLinkDialogWidget ?? child.customLinkDialogWidget,
-          customBoxDecoration: child.customBoxDecoration,
-          onColor: child.onColor,
-          offColor: child.offColor,
-        );
-      }
-      return child;
-    }).toList();
   }
 }
 
