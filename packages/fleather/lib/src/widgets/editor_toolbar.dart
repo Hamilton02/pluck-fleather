@@ -297,7 +297,7 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
     // If a custom dialog builder is provided, use it with the current selection data
     if (widget.customLinkDialogBuilder != null) {
-      showDialog(
+      _showCustomDialog(
         context: context,
         builder: (ctx) =>
             widget.customLinkDialogBuilder!(selectedText, existingLink),
@@ -307,7 +307,7 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
     // If a custom dialog widget is provided, show it directly
     if (widget.customLinkDialogWidget != null) {
-      showDialog(
+      _showCustomDialog(
         context: context,
         builder: (ctx) => widget.customLinkDialogWidget!,
       );
@@ -344,6 +344,41 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
     // Request keyboard if toolbar is available
     toolbar?.requestKeyboard();
+  }
+
+  void _showCustomDialog({
+    required BuildContext context,
+    required Widget Function(BuildContext) builder,
+  }) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Material(
+        color: Colors.black54,
+        child: Center(
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: 400,
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
+            child: Card(
+              elevation: 8,
+              child: builder(context),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Add a listener to remove the overlay when the dialog is closed
+    overlayEntry.addListener(() {
+      if (!overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
   }
 }
 
