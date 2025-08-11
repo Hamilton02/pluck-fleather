@@ -216,8 +216,6 @@ class LinkStyleButton extends StatefulWidget {
 }
 
 class _LinkStyleButtonState extends State<LinkStyleButton> {
-  OverlayEntry? _currentOverlayEntry;
-
   void _didChangeSelection() {
     setState(() {});
   }
@@ -239,7 +237,6 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
   @override
   void dispose() {
-    _removeOverlay(); // Clean up overlay if widget is disposed
     super.dispose();
     widget.controller.removeListener(_didChangeSelection);
   }
@@ -282,11 +279,6 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     return linkAttribute?.value;
   }
 
-  void _removeOverlay() {
-    _currentOverlayEntry?.remove();
-    _currentOverlayEntry = null;
-  }
-
   void _openLinkDialog(BuildContext context) {
     // Try to capture the toolbar reference before showing the dialog
     final toolbar = context.findAncestorStateOfType<_FleatherToolbarState>();
@@ -297,20 +289,21 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
     // If a custom dialog builder is provided, use it with the current selection data
     if (widget.customLinkDialogBuilder != null) {
-      _showCustomDialog(
+      showDialog<void>(
         context: context,
+        barrierDismissible: true,
         builder: (ctx) => widget.customLinkDialogBuilder!(
           selectedText,
           existingLink,
           (linkUrl, displayText) {
             // Apply the link
             _linkSubmitted({'link': linkUrl, 'text': displayText}, toolbar);
-            // Remove the overlay
-            _removeOverlay();
+            // Close the dialog
+            Navigator.of(ctx).pop();
           },
           () {
             // Just close the dialog
-            _removeOverlay();
+            Navigator.of(ctx).pop();
           },
         ),
       );
@@ -346,51 +339,6 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
     // Request keyboard if toolbar is available
     toolbar?.requestKeyboard();
-  }
-
-  void _showCustomDialog({
-    required BuildContext context,
-    required Widget Function(BuildContext) builder,
-  }) {
-    final overlay = Overlay.of(context);
-    late OverlayEntry overlayEntry;
-
-    overlayEntry = OverlayEntry(
-      builder: (context) => Stack(
-        children: [
-          // Semi-transparent background that closes dialog when tapped
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => _removeOverlay(),
-              child: Container(color: Colors.black54),
-            ),
-          ),
-          // Dialog content
-          Center(
-            child: Material(
-              color: Colors.transparent,
-              child: GestureDetector(
-                onTap: () {
-                  // Prevent closing when tapping inside the dialog
-                },
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: 400,
-                    maxHeight: MediaQuery.of(context).size.height * 0.8,
-                  ),
-                  child: builder(context),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    overlay.insert(overlayEntry);
-
-    // Store the overlay entry for removal
-    _currentOverlayEntry = overlayEntry;
   }
 }
 
