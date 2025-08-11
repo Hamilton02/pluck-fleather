@@ -141,8 +141,13 @@ class LinkStyleButton extends StatefulWidget {
 
   /// A function that creates a custom dialog widget with the current selection data.
   /// This allows the custom dialog to be pre-populated with the selected text and existing link.
-  final Widget Function(String selectedText, String? existingLink)?
-      customLinkDialogBuilder;
+  /// The dialog should handle its own closing and call the provided callbacks.
+  final Widget Function(
+    String selectedText,
+    String? existingLink,
+    void Function(String linkUrl, String displayText) applyLink,
+    VoidCallback closeDialog,
+  )? customLinkDialogBuilder;
 
   const LinkStyleButton(
       {super.key,
@@ -286,8 +291,20 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     if (widget.customLinkDialogBuilder != null) {
       _showCustomDialog(
         context: context,
-        builder: (ctx) =>
-            widget.customLinkDialogBuilder!(selectedText, existingLink),
+        builder: (ctx) => widget.customLinkDialogBuilder!(
+          selectedText,
+          existingLink,
+          (linkUrl, displayText) {
+            // Apply the link
+            _linkSubmitted({'link': linkUrl, 'text': displayText}, toolbar);
+            // Remove the overlay
+            Navigator.of(ctx).pop();
+          },
+          () {
+            // Just close the dialog
+            Navigator.of(ctx).pop();
+          },
+        ),
       );
       return;
     }
@@ -1071,8 +1088,13 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
 
   /// A function that creates a custom dialog widget with the current selection data.
   /// This allows the custom dialog to be pre-populated with the selected text and existing link.
-  final Widget Function(String selectedText, String? existingLink)?
-      customLinkDialogBuilder;
+  /// The dialog should handle its own closing and call the provided callbacks.
+  final Widget Function(
+    String selectedText,
+    String? existingLink,
+    void Function(String linkUrl, String displayText) applyLink,
+    VoidCallback closeDialog,
+  )? customLinkDialogBuilder;
 
   const FleatherToolbar(
       {super.key,
@@ -1110,8 +1132,12 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
       Color? buttonOnColor,
       Color? buttonOffColor,
       BoxDecoration? buttonDecoration,
-      Widget Function(String selectedText, String? existingLink)?
-          customLinkDialogBuilder}) {
+      Widget Function(
+        String selectedText,
+        String? existingLink,
+        void Function(String linkUrl, String displayText) applyLink,
+        VoidCallback closeDialog,
+      )? customLinkDialogBuilder}) {
     Widget backgroundColorBuilder(context, value) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1430,7 +1456,11 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
               onColor: buttonOnColor,
               customBoxDecoration: buttonDecoration,
               controller: controller,
-              customLinkDialogBuilder: customLinkDialogBuilder,
+              customLinkDialogBuilder: customLinkDialogBuilder != null
+                  ? (selectedText, existingLink, applyLink, closeDialog) =>
+                      customLinkDialogBuilder(
+                          selectedText, existingLink, applyLink, closeDialog)
+                  : null,
             )),
         Visibility(
           visible: !hideHorizontalRule,
