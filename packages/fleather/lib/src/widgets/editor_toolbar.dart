@@ -221,8 +221,8 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
   }
 
   void _openLinkDialog(BuildContext context) {
-    // Capture the toolbar reference before showing the dialog
-    final toolbar = FleatherToolbar._of(context);
+    // Try to capture the toolbar reference before showing the dialog
+    final toolbar = context.findAncestorStateOfType<_FleatherToolbarState>();
 
     showDialog<Map<String, String>>(
       context: context,
@@ -237,7 +237,7 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
   }
 
   void _linkSubmitted(
-      Map<String, String>? value, _FleatherToolbarState toolbar) {
+      Map<String, String>? value, _FleatherToolbarState? toolbar) {
     if (value == null || value['link'] == null || value['text'] == null) return;
 
     final selection = widget.controller.selection;
@@ -251,7 +251,8 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
     widget.controller.formatText(index, value['text']!.length,
         ParchmentAttribute.link.fromString(value['link']!));
 
-    toolbar.requestKeyboard();
+    // Request keyboard if toolbar is available
+    toolbar?.requestKeyboard();
   }
 }
 
