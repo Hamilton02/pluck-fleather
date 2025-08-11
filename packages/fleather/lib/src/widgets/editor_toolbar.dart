@@ -306,6 +306,12 @@ class _LinkDialogState extends State<_LinkDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // Debug: Check if custom dialog is provided
+    print(
+        'Custom link dialog: ${widget.customLinkDialog != null ? 'PROVIDED' : 'NOT PROVIDED'}');
+    print('Selected text: "${widget.selectedText}"');
+    print('Existing link: "${widget.existingLink}"');
+
     return AlertDialog(
       content: widget.customLinkDialog != null
           ? widget.customLinkDialog!(_linkChanged, _textChanged, _applyLink,
