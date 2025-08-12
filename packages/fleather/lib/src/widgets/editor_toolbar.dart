@@ -151,6 +151,9 @@ class LinkStyleButton extends StatefulWidget {
     bool handleNavigation,
   )? customLinkDialogBuilder;
 
+  /// Whether the custom dialog handles its own navigation (true) or Fleather handles it (false).
+  final bool customDialogHandlesNavigation;
+
   const LinkStyleButton(
       {super.key,
       required this.controller,
@@ -158,7 +161,8 @@ class LinkStyleButton extends StatefulWidget {
       this.customLinkDialogBuilder,
       this.customBoxDecoration,
       this.onColor,
-      this.offColor});
+      this.offColor,
+      this.customDialogHandlesNavigation = false});
 
   /// Static method to remove the link attribute from the current selection
   /// while keeping the text content intact.
@@ -306,17 +310,22 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
             // Apply the link
             _linkSubmitted({'link': linkUrl, 'text': displayText}, toolbar);
-            // Close the dialog - only Fleather should handle this
-            Navigator.of(ctx).pop();
+            // Close the dialog only if Fleather should handle navigation
+            if (!widget.customDialogHandlesNavigation) {
+              Navigator.of(ctx).pop();
+            }
           },
           () {
             if (_isDialogClosing) return;
             _isDialogClosing = true;
 
-            // Just close the dialog - only Fleather should handle this
-            Navigator.of(ctx).pop();
+            // Close the dialog only if Fleather should handle navigation
+            if (!widget.customDialogHandlesNavigation) {
+              Navigator.of(ctx).pop();
+            }
           },
-          true, // handleNavigation = true (Fleather handles navigation)
+          !widget
+              .customDialogHandlesNavigation, // handleNavigation = !customDialogHandlesNavigation
         ),
       );
       return;
@@ -1079,12 +1088,16 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
     bool handleNavigation,
   )? customLinkDialogBuilder;
 
+  /// Whether the custom dialog handles its own navigation (true) or Fleather handles it (false).
+  final bool customDialogHandlesNavigation;
+
   const FleatherToolbar(
       {super.key,
       this.editorKey,
       this.padding,
       required this.children,
-      this.customLinkDialogBuilder});
+      this.customLinkDialogBuilder,
+      this.customDialogHandlesNavigation = false});
 
   factory FleatherToolbar.basic(
       {Key? key,
@@ -1121,7 +1134,8 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
         void Function(String linkUrl, String displayText) applyLink,
         VoidCallback closeDialog,
         bool handleNavigation,
-      )? customLinkDialogBuilder}) {
+      )? customLinkDialogBuilder,
+      bool customDialogHandlesNavigation = false}) {
     Widget backgroundColorBuilder(context, value) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1446,6 +1460,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
                       customLinkDialogBuilder(selectedText, existingLink,
                           applyLink, closeDialog, handleNavigation)
                   : null,
+              customDialogHandlesNavigation: customDialogHandlesNavigation,
             )),
         Visibility(
           visible: !hideHorizontalRule,
