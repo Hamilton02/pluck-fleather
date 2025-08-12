@@ -142,11 +142,13 @@ class LinkStyleButton extends StatefulWidget {
   /// A function that creates a custom dialog widget with the current selection data.
   /// This allows the custom dialog to be pre-populated with the selected text and existing link.
   /// The dialog should handle its own closing and call the provided callbacks.
+  /// If [handleNavigation] is true, Fleather will handle dialog closing. If false, the custom dialog should handle its own navigation.
   final Widget Function(
     String selectedText,
     String? existingLink,
     void Function(String linkUrl, String displayText) applyLink,
     VoidCallback closeDialog,
+    bool handleNavigation,
   )? customLinkDialogBuilder;
 
   const LinkStyleButton(
@@ -216,6 +218,8 @@ class LinkStyleButton extends StatefulWidget {
 }
 
 class _LinkStyleButtonState extends State<LinkStyleButton> {
+  bool _isDialogClosing = false;
+
   void _didChangeSelection() {
     setState(() {});
   }
@@ -289,6 +293,7 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
 
     // If a custom dialog builder is provided, use it with the current selection data
     if (widget.customLinkDialogBuilder != null) {
+      _isDialogClosing = false;
       showDialog<void>(
         context: context,
         barrierDismissible: true,
@@ -296,15 +301,22 @@ class _LinkStyleButtonState extends State<LinkStyleButton> {
           selectedText,
           existingLink,
           (linkUrl, displayText) {
+            if (_isDialogClosing) return;
+            _isDialogClosing = true;
+
             // Apply the link
             _linkSubmitted({'link': linkUrl, 'text': displayText}, toolbar);
-            // Close the dialog
+            // Close the dialog - only Fleather should handle this
             Navigator.of(ctx).pop();
           },
           () {
-            // Just close the dialog
+            if (_isDialogClosing) return;
+            _isDialogClosing = true;
+
+            // Just close the dialog - only Fleather should handle this
             Navigator.of(ctx).pop();
           },
+          true, // handleNavigation = true (Fleather handles navigation)
         ),
       );
       return;
@@ -1058,11 +1070,13 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
   /// A function that creates a custom dialog widget with the current selection data.
   /// This allows the custom dialog to be pre-populated with the selected text and existing link.
   /// The dialog should handle its own closing and call the provided callbacks.
+  /// If [handleNavigation] is true, Fleather will handle dialog closing. If false, the custom dialog should handle its own navigation.
   final Widget Function(
     String selectedText,
     String? existingLink,
     void Function(String linkUrl, String displayText) applyLink,
     VoidCallback closeDialog,
+    bool handleNavigation,
   )? customLinkDialogBuilder;
 
   const FleatherToolbar(
@@ -1106,6 +1120,7 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
         String? existingLink,
         void Function(String linkUrl, String displayText) applyLink,
         VoidCallback closeDialog,
+        bool handleNavigation,
       )? customLinkDialogBuilder}) {
     Widget backgroundColorBuilder(context, value) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1426,9 +1441,10 @@ class FleatherToolbar extends StatefulWidget implements PreferredSizeWidget {
               customBoxDecoration: buttonDecoration,
               controller: controller,
               customLinkDialogBuilder: customLinkDialogBuilder != null
-                  ? (selectedText, existingLink, applyLink, closeDialog) =>
-                      customLinkDialogBuilder(
-                          selectedText, existingLink, applyLink, closeDialog)
+                  ? (selectedText, existingLink, applyLink, closeDialog,
+                          handleNavigation) =>
+                      customLinkDialogBuilder(selectedText, existingLink,
+                          applyLink, closeDialog, handleNavigation)
                   : null,
             )),
         Visibility(
