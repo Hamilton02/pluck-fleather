@@ -283,6 +283,9 @@ class ParchmentDocument {
   /// Key of the embed attribute used in Parchment 0.x (prior to 1.0).
   static const String _kEmbedAttributeKey = 'embed';
 
+  /// Key of the legacy header attribute (migrated to 'heading').
+  static const String _kLegacyHeaderAttributeKey = 'header';
+
   /// Migrates `delta` to the latest format supported by Parchment documents.
   ///
   /// Allows backward compatibility with 0.x versions of Parchment package.
@@ -299,6 +302,22 @@ class ParchmentDocument {
         final embed = EmbeddableObject.fromJson(data);
         attrs.remove(_kEmbedAttributeKey);
         result.push(Operation.insert(embed, attrs.isNotEmpty ? attrs : null));
+      } else if (op.hasAttribute(_kLegacyHeaderAttributeKey)) {
+        // Convert legacy 'header' attribute to 'heading' attribute.
+        final attrs = Map<String, dynamic>.from(op.attributes!);
+        final level = attrs[_kLegacyHeaderAttributeKey];
+        attrs.remove(_kLegacyHeaderAttributeKey);
+        attrs['heading'] = level;
+        if (op.isInsert) {
+          result
+              .push(Operation.insert(op.data, attrs.isNotEmpty ? attrs : null));
+        } else if (op.isRetain) {
+          result.push(
+              Operation.retain(op.length, attrs.isNotEmpty ? attrs : null));
+        } else {
+          // op.isDelete - delete operations don't have attributes
+          result.push(op);
+        }
       } else {
         result.push(op);
       }
@@ -458,7 +477,7 @@ class ParchmentDocument {
         ops.addAll(parseInline(content));
         ops.add({
           'insert': '\n',
-          'attributes': {'header': level}
+          'attributes': {'heading': level}
         });
         i++;
         continue;
