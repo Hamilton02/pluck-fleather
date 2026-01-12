@@ -270,7 +270,14 @@ class ParchmentStyle {
   static ParchmentStyle fromJson(Map<String, dynamic>? data) {
     if (data == null) return ParchmentStyle();
 
-    final result = data.map((String key, dynamic value) {
+    // Migrate legacy "header" attribute to "heading"
+    final migratedData = Map<String, dynamic>.from(data);
+    if (migratedData.containsKey('header')) {
+      final level = migratedData.remove('header');
+      migratedData['heading'] = level;
+    }
+
+    final result = migratedData.map((String key, dynamic value) {
       var attr = ParchmentAttribute._fromKeyValue(key, value);
       return MapEntry<String, ParchmentAttribute>(key, attr);
     });
