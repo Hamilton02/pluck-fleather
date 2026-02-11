@@ -286,9 +286,39 @@ class ParchmentDocument {
   /// Key of the legacy header attribute (migrated to 'heading').
   static const String _kLegacyHeaderAttributeKey = 'header';
 
+  /// Line-scoped attribute keys. Block styles must apply only to newline ops;
+  /// see [LeafNode.applyStyle] assertion. Used to split "text\n" ops when they
+  /// carry these attributes so the package accepts any producer's delta.
+  static const Set<String> _kLineScopedAttributeKeys = {
+    'block',
+    'heading',
+    'alignment',
+    'direction',
+    'indent',
+    'checked',
+  };
+
+  static bool _hasLineScopedAttribute(Map<String, dynamic>? attrs) {
+    if (attrs == null || attrs.isEmpty) return false;
+    return attrs.keys.any(_kLineScopedAttributeKeys.contains);
+  }
+
+  static Map<String, dynamic>? _inlineOnlyAttributes(Map<String, dynamic>? attrs) {
+    if (attrs == null || attrs.isEmpty) return null;
+    final filtered = Map<String, dynamic>.from(attrs);
+    for (final k in _kLineScopedAttributeKeys) {
+      filtered.remove(k);
+    }
+    return filtered.isNotEmpty ? filtered : null;
+  }
+
   /// Migrates `delta` to the latest format supported by Parchment documents.
   ///
   /// Allows backward compatibility with 0.x versions of Parchment package.
+  /// Also normalizes insert ops so line-scoped attributes (e.g. block, heading)
+  /// apply only to newline ops; splits "text\n" with line attributes into
+  /// "text" (inline attrs only) + "\n" (full attrs) so [LeafNode] never
+  /// receives block style.
   static Delta _migrateDelta(Delta delta) {
     final result = Delta();
     for (final op in delta.toList()) {
@@ -316,6 +346,27 @@ class ParchmentDocument {
               Operation.retain(op.length, attrs.isNotEmpty ? attrs : null));
         } else {
           // op.isDelete - delete operations don't have attributes
+          result.push(op);
+        }
+      } else if (op.isInsert &&
+          op.data is String &&
+          op.attributes != null &&
+          op.attributes!.isNotEmpty) {
+        final data = op.data as String;
+        final attrs = Map<String, dynamic>.from(op.attributes!);
+        if (data.endsWith('\n') &&
+            data != '\n' &&
+            _hasLineScopedAttribute(op.attributes)) {
+          // Split so line attributes apply only to the newline op (LeafNode
+          // cannot have block/line styles).
+          final textPart = data.substring(0, data.length - 1);
+          if (textPart.isNotEmpty) {
+            final inlineAttrs = _inlineOnlyAttributes(op.attributes);
+            result.push(Operation.insert(
+                textPart, inlineAttrs != null && inlineAttrs.isNotEmpty ? inlineAttrs : null));
+          }
+          result.push(Operation.insert('\n', attrs));
+        } else {
           result.push(op);
         }
       } else {
