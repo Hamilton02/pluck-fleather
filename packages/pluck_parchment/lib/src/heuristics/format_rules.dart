@@ -30,10 +30,12 @@ class ResolveLineFormatRule extends FormatRule {
     // Apply line styles to all newline characters within range of this
     // retain operation.
     var current = 0;
+    var sawNewlineInRange = false;
     while (current < length && iter.hasNext) {
       final op = iter.next(length - current);
       final opText = op.data is String ? op.data as String : '';
       if (opText.contains('\n')) {
+        sawNewlineInRange = true;
         final delta = _applyAttribute(op.data as String, op, attribute);
         result = result.concat(delta);
       } else {
@@ -41,18 +43,24 @@ class ResolveLineFormatRule extends FormatRule {
       }
       current += op.length;
     }
-    // And include extra newline after retain
-    while (iter.hasNext) {
-      final op = iter.next();
-      final opText = op.data is String ? op.data as String : '';
-      final lf = opText.indexOf('\n');
-      if (lf == -1) {
-        result.retain(op.length);
-        continue;
+    // Include one extra newline after retain only when the retain range did not
+    // already include any newline. This ensures line-scoped formatting applies
+    // to the current line when the selection does not contain '\n', while
+    // avoiding "leaking" the style into the following line when the selection
+    // already spans one or more lines.
+    if (!sawNewlineInRange) {
+      while (iter.hasNext) {
+        final op = iter.next();
+        final opText = op.data is String ? op.data as String : '';
+        final lf = opText.indexOf('\n');
+        if (lf == -1) {
+          result.retain(op.length);
+          continue;
+        }
+        final delta = _applyAttribute(opText, op, attribute, firstOnly: true);
+        result = result.concat(delta);
+        break;
       }
-      final delta = _applyAttribute(opText, op, attribute, firstOnly: true);
-      result = result.concat(delta);
-      break;
     }
     return result;
   }

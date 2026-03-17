@@ -303,7 +303,8 @@ class ParchmentDocument {
     return attrs.keys.any(_kLineScopedAttributeKeys.contains);
   }
 
-  static Map<String, dynamic>? _inlineOnlyAttributes(Map<String, dynamic>? attrs) {
+  static Map<String, dynamic>? _inlineOnlyAttributes(
+      Map<String, dynamic>? attrs) {
     if (attrs == null || attrs.isEmpty) return null;
     final filtered = Map<String, dynamic>.from(attrs);
     for (final k in _kLineScopedAttributeKeys) {
@@ -363,7 +364,10 @@ class ParchmentDocument {
           if (textPart.isNotEmpty) {
             final inlineAttrs = _inlineOnlyAttributes(op.attributes);
             result.push(Operation.insert(
-                textPart, inlineAttrs != null && inlineAttrs.isNotEmpty ? inlineAttrs : null));
+                textPart,
+                inlineAttrs != null && inlineAttrs.isNotEmpty
+                    ? inlineAttrs
+                    : null));
           }
           result.push(Operation.insert('\n', attrs));
         } else {
