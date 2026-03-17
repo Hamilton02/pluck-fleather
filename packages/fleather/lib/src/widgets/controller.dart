@@ -132,6 +132,53 @@ class FleatherController extends ChangeNotifier {
 
     final isDataNotEmpty = data is String ? data.isNotEmpty : true;
 
+    // Special-case: Backspace on an *empty* list item should exit the list
+    // instead of deleting the newline that separates list items. This produces
+    // exactly one empty paragraph after the list (common rich-text behavior).
+    //
+    // In plain text this scenario looks like deleting a '\n' where the next
+    // character is also '\n' (an empty line), and that empty line carries a
+    // list block attribute (ul/ol/cl).
+    if (data is String &&
+        data.isEmpty &&
+        length == 1 &&
+        index >= 0 &&
+        index < document.length) {
+      final plain = document.toPlainText();
+      if (index < plain.length &&
+          plain[index] == '\n' &&
+          index + 1 < plain.length &&
+          plain[index + 1] == '\n') {
+        final nextOp = document.toDelta().slice(index + 1, index + 2).first;
+        final nextStyle = ParchmentStyle.fromJson(nextOp.attributes);
+        final nextBlock = nextStyle.get(ParchmentAttribute.block);
+        final isListBlock = nextBlock == ParchmentAttribute.block.bulletList ||
+            nextBlock == ParchmentAttribute.block.numberList ||
+            nextBlock == ParchmentAttribute.block.checkList;
+        if (isListBlock) {
+          // Unset the list style on the empty line (its newline char).
+          formatText(index + 1, 1, ParchmentAttribute.block.unset,
+              notify: false);
+          formatText(index + 1, 1, ParchmentAttribute.indent.unset,
+              notify: false);
+          if (nextBlock == ParchmentAttribute.block.checkList &&
+              nextStyle.containsSame(ParchmentAttribute.checked)) {
+            formatText(index + 1, 1, ParchmentAttribute.checked.unset,
+                notify: false);
+          }
+
+          // Keep the caret on the now-empty paragraph.
+          final desiredSelection = TextSelection.collapsed(offset: index + 1);
+          _updateSelectionSilent(desiredSelection, source: ChangeSource.local);
+
+          // Ensure listeners update after the composed format changes.
+          _updateHistory();
+          notifyListeners();
+          return;
+        }
+      }
+    }
+
     if (!_captureAutoFormatCancellationOrUndo(document, index, length, data)) {
       _updateHistory();
       notifyListeners();
